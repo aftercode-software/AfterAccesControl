@@ -1,12 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
 import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import { HStack } from './components/ui/hstack';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function App() {
   return (
-    <GluestackUIProvider mode="dark"><View style={styles.container}>
-        <Text>Open up App.tsx to start working on your app!</Text>
+    <GluestackUIProvider mode="light"><View style={styles.container}>
+        <Text >Open up App.tsx to start working on your app!</Text>
+        <HStack>
+          <Text>Open up App.tsx to start working on your app!</Text>
+        </HStack>
         <StatusBar style="auto" />
       </View></GluestackUIProvider>
   );

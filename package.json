@@ -9,6 +9,7 @@
     "web": "DARK_MODE=media expo start --web"
   },
   "dependencies": {
+    "@gluestack-ui/form-control": "^0.1.19",
     "@gluestack-ui/nativewind-utils": "^1.0.26",
     "@gluestack-ui/overlay": "^0.1.16",
     "@gluestack-ui/toast": "^1.0.8",
