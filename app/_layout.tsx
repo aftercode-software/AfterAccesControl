@@ -1,12 +1,10 @@
-import { Slot } from "expo-router";
-import { View } from "react-native";
+import "@/global.css";
+import { Slot, Stack } from "expo-router";
+import { View, Text } from "react-native";
+
 
 export default function Layout() {
 
 
-  return (
-    <View>
-        <Slot></Slot>
-    </View>
-  );
+  return <Stack/>;
 }
