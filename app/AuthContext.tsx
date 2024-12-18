@@ -4,18 +4,17 @@ import * as SecureStore from "expo-secure-store";
 
 // Definimos el tipo de usuario
 interface User {
-  id: number;
-  email: string;
+  username: string;
   token: string;
 }
 
 // Definimos el tipo del contexto
 interface AuthContextType {
   user: User | null;
-  login: (id: number, email: string) => Promise<void>;
+  login: ( username: string) => Promise<void>;
   logout: () => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  name: string;
+  
 }
 
 // Creamos el contexto
@@ -39,12 +38,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   // Función para iniciar sesión
-  const login = async (id: number, email: string): Promise<void> => {
+  const login = async ( username: string): Promise<void> => {
     try {
-      const response = await axios.post("https://backend-afteraccess.vercel.app/login", { id, email });
+      const response = await axios.post("https://backend-afteraccess.vercel.app/login", { username });
       const token = response.data.token;
       await SecureStore.setItemAsync("userToken", token);
-      setUser({ id, email, token });
+      setUser({ username, token });
     } catch (error) {
       console.error("Error during login:", error);
       throw new Error("No se pudo iniciar sesión. Verifica tus credenciales.");
@@ -62,14 +61,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const loadUser = async () => {
       const token = await SecureStore.getItemAsync("userToken");
       if (token) {
-        setUser({ id: 1, email: "example@example.com", token }); // Ajusta según tu lógica de recuperación
+        setUser({ username: "casucha3", token }); // Ajusta según tu lógica de recuperación
       }
     };
     loadUser();
   }, []);
-  const name = "John Doe";
+  
   return (
-    <AuthContext.Provider value={{ user, login, logout, setUser,name }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );
