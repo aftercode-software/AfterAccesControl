@@ -32,6 +32,7 @@ export default function Login() {
         "https://backend-afteraccess.vercel.app/login",
         { username, password }
       );
+      console.log("response", response);
 
       Alert.alert("Éxito", `Bienvenido, ${username}!`);
       const { token } = response.data;

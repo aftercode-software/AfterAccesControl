@@ -12,7 +12,7 @@ function AuthCheck() {
     if (!user) {
       router.replace("/login");
     } else {
-      router.replace("/home");
+      router.replace("/ingreso");
     }
   }, [user]);
 
