@@ -2,10 +2,8 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Link } from "expo-router";
 import { View, Text } from "react-native";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { useAuth } from "@/app/AuthContext";
 
 export default function HomeScreen() {
-  const { name } = useAuth();
   return (
     <GluestackUIProvider mode="light">
       <View>
@@ -14,7 +12,7 @@ export default function HomeScreen() {
           Login
         </Link>
         <Button size="md" variant="solid" action="primary">
-          <ButtonText>{name}</ButtonText>
+          <ButtonText>nashe</ButtonText>
         </Button>
       </View>
     </GluestackUIProvider>

@@ -9,6 +9,8 @@
     "web": "DARK_MODE=media expo start --web"
   },
   "dependencies": {
+    "@expo/html-elements": "^0.4.2",
+    "@gluestack-ui/actionsheet": "^0.2.46",
     "@gluestack-ui/button": "^1.0.8",
     "@gluestack-ui/fab": "^0.1.22",
     "@gluestack-ui/form-control": "^0.1.19",
@@ -16,7 +18,11 @@
     "@gluestack-ui/input": "^0.1.32",
     "@gluestack-ui/nativewind-utils": "^1.0.26",
     "@gluestack-ui/overlay": "^0.1.16",
+    "@gluestack-ui/select": "^0.1.30",
     "@gluestack-ui/toast": "^1.0.8",
+    "@legendapp/motion": "^2.4.0",
+    "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-native-community/datetimepicker": "8.2.0",
     "axios": "^1.7.9",
     "babel-plugin-module-resolver": "^5.0.2",
     "expo": "~52.0.18",
@@ -25,6 +31,7 @@
     "expo-router": "4.0.11",
     "expo-secure-store": "~14.0.0",
     "expo-status-bar": "~2.0.0",
+    "lucide-react-native": "^0.468.0",
     "nativewind": "^4.1.23",
     "react": "18.3.1",
     "react-native": "0.76.5",
