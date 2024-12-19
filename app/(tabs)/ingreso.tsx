@@ -21,23 +21,22 @@ import { AuthContext } from "@/context/AuthContext";
 export default function Ingreso() {
   const { user } = useContext(AuthContext) ?? {};
   const token = user?.token;
+  console.log("Token:", token);
 
   const [formData, setFormData] = useState({
-    tipo: "entrada",
     nombre: "",
-    hora: "",
+    horaIngreso: "",
     cedula: "",
     marca: "",
     vehiculo: "",
     chapa: "",
     destino: "",
-    fecha: "",
-    boleta: "",
-    pago: "",
+    fechaIngreso: "",
     monto: "",
+    pago: "",
+    boleta: "",
     observaciones: "",
   });
-
   const [chapas, setChapas] = useState<
     {
       chapa: string;
@@ -50,48 +49,63 @@ export default function Ingreso() {
   const [query, setQuery] = useState("");
   const [mostrarOpciones, setMostrarOpciones] = useState(false);
 
+  // Obtener chapas desde el servidor al cargar el componente
   useEffect(() => {
-    const obtenerChapas = () => {
-      const dataSimulada = [
-        {
-          chapa: "ABC123",
-          nombre: "Juan Pérez",
-          cedula: "12345678",
-          marca: "Ford",
-          vehiculo: "Camión",
-        },
-        {
-          chapa: "ABC123",
-          nombre: "Juan Pérez",
-          cedula: "12345678",
-          marca: "Ford",
-          vehiculo: "Camión",
-        },
-        {
-          chapa: "DEF456",
-          nombre: "Carlos López",
-          cedula: "87654321",
-          marca: "Toyota",
-          vehiculo: "Camioneta",
-        },
-        {
-          chapa: "GHI789",
-          nombre: "Ana Gómez",
-          cedula: "11223344",
-          marca: "Chevrolet",
-          vehiculo: "Transganado",
-        },
-      ];
+    const obtenerChapas = async () => {
+      if (!token) {
+        console.error("Error: Token no encontrado");
+        Alert.alert("Error", "No estás autorizado. Por favor, inicia sesión nuevamente.");
+        return;
+      }
 
-      const chapasUnicas = Array.from(
-        new Map(dataSimulada.map((item) => [item.chapa, item])).values()
-      );
+      try {
+        const response = await axios.get<{
+          chapa: string;
+          nombre: string;
+          cedula: string;
+          marca: string;
+          vehiculo: string;
+        }[]>(
+          "https://backend-afteraccess.vercel.app/buscar-chapa/",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      setChapas(chapasUnicas);
+        const chapasUnicas = Array.from(
+          new Map(
+            response.data.map((item) => [
+              item.chapa,
+              {
+                chapa: item.chapa || "",
+                nombre: item.nombre || "",
+                cedula: item.cedula || "",
+                marca: item.marca || "",
+                vehiculo: item.vehiculo || "",
+              },
+            ])
+          ).values()
+        );
+
+        setChapas(chapasUnicas); // Actualizamos el estado con chapas únicas
+      } catch (error) {
+        console.error("Error al obtener chapas:", error);
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          Alert.alert("Error", "No estás autorizado. Por favor, inicia sesión nuevamente.");
+        } else {
+          Alert.alert(
+            "Error",
+            "No se pudieron cargar las chapas desde el servidor. Verifica tu conexión."
+          );
+        }
+      }
     };
 
     obtenerChapas();
-  }, []);
+  }, [token]);
 
   const filtrarChapas = (texto: string) => {
     setQuery(texto);
@@ -108,6 +122,11 @@ export default function Ingreso() {
         cedula: chapaSeleccionada.cedula,
         marca: chapaSeleccionada.marca,
         vehiculo: chapaSeleccionada.vehiculo,
+        horaIngreso: formData.horaIngreso,
+        pago: formData.pago,
+        monto: formData.monto,
+        fechaIngreso: formData.fechaIngreso,
+        destino: formData.destino,
       });
     }
     setQuery(valor);
@@ -115,22 +134,16 @@ export default function Ingreso() {
   };
 
   const handleSubmit = async () => {
+    // Validación de campos requeridos
     for (const key in formData) {
-      if (!formData[key as keyof typeof formData]?.trim()) {
+      if (!formData[key as keyof typeof formData]?.trim() && key !== "monto") {
         Alert.alert("Error", `El campo ${key} es obligatorio.`);
         return;
       }
     }
-
-    if (formData.pago === "efectivo" && !formData.monto.trim()) {
-      Alert.alert(
-        "Error",
-        "El campo monto es obligatorio cuando el pago es en efectivo."
-      );
-      return;
-    }
-
+  
     try {
+      // Intentar enviar al servidor
       const response = await axios.post(
         "https://backend-afteraccess.vercel.app/movimiento",
         formData,
@@ -141,42 +154,20 @@ export default function Ingreso() {
           },
         }
       );
-
+  
       if (response.status === 200) {
         Alert.alert("Éxito", "Información enviada correctamente.");
-
-        const localData = await AsyncStorage.getItem("vehiculosIngresados");
-        const updatedData = localData
-          ? [...JSON.parse(localData), formData]
-          : [formData];
-        await AsyncStorage.setItem(
-          "vehiculosIngresados",
-          JSON.stringify(updatedData)
-        );
-
-        setFormData({
-          tipo: "entrada",
-          nombre: "",
-          hora: "",
-          cedula: "",
-          marca: "",
-          vehiculo: "",
-          chapa: "",
-          destino: "",
-          fecha: "",
-          boleta: "",
-          pago: "",
-          monto: "",
-          observaciones: "",
-        });
       }
     } catch (error) {
       console.error("Error al enviar datos:", error);
       Alert.alert(
         "Error",
-        "No se pudo enviar la información. Verifica tu conexión a internet."
+        "No se pudo enviar la información al servidor. Guardando localmente."
       );
-
+    }
+  
+    try {
+      // Guardar en almacenamiento local
       const localData = await AsyncStorage.getItem("vehiculosPendientes");
       const updatedData = localData
         ? [...JSON.parse(localData), formData]
@@ -185,13 +176,34 @@ export default function Ingreso() {
         "vehiculosPendientes",
         JSON.stringify(updatedData)
       );
-      Alert.alert("Error", "No se pudo enviar la información al servidor.");
+  
+      // Restablecer el formulario
+      setFormData({
+        nombre: "",
+        horaIngreso: "",
+        cedula: "",
+        marca: "",
+        vehiculo: "",
+        chapa: "",
+        destino: "",
+        fechaIngreso: "",
+        monto: "",
+        pago: "",
+        boleta: "",
+        observaciones: "",
+      });
+      
+      setQuery("");
+      setMostrarOpciones(false);
+    } catch (error) {
+      console.error("Error al guardar datos localmente:", error);
+      Alert.alert("Error", "No se pudo guardar la información localmente.");
     }
   };
 
   return (
     <GluestackUIProvider mode="light">
-      <ScrollView>
+      <ScrollView nestedScrollEnabled>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           className="p-4"
@@ -235,37 +247,28 @@ export default function Ingreso() {
                           <Text>{item.chapa}</Text>
                         </TouchableOpacity>
                       )}
+                      nestedScrollEnabled // Activar scroll anidado
                     />
                   </View>
                 )}
               </VStack>
 
-              {[
-                "nombre",
-                "hora",
-                "cedula",
-                "marca",
-                "vehiculo",
-                "destino",
-                "fecha",
-                "boleta",
-                "pago",
-                "monto",
-                "observaciones",
-              ].map((key) => (
-                <VStack key={key}>
-                  <Text>{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
-                  <Input>
-                    <InputField
-                      placeholder={`Ingresa ${key}`}
-                      value={formData[key as keyof typeof formData]}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, [key]: text })
-                      }
-                    />
-                  </Input>
-                </VStack>
-              ))}
+              {[...Object.keys(formData)]
+                .filter((key) => !["chapa"].includes(key))
+                .map((key) => (
+                  <VStack key={key}>
+                    <Text>{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
+                    <Input>
+                      <InputField
+                        placeholder={`Ingresa ${key}`}
+                        value={formData[key as keyof typeof formData]}
+                        onChangeText={(text) =>
+                          setFormData({ ...formData, [key]: text })
+                        }
+                      />
+                    </Input>
+                  </VStack>
+                ))}
 
               <Button onPress={handleSubmit}>
                 <ButtonText>Subir Información</ButtonText>

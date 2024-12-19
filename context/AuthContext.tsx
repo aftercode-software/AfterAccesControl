@@ -5,7 +5,6 @@ import React, {
   ReactNode,
   useEffect,
 } from "react";
-import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 interface User {
@@ -39,19 +38,16 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  const tokenFijo = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiaWF0IjoxNzM0NjQ4Mjk2fQ.WekA71rmsSoS9SBJjyMm6h4iBqYZn5pFL54hnJoC6r0";
+
   const login = async (username: string): Promise<void> => {
     try {
-      const response = await axios.post(
-        "https://backend-afteraccess.vercel.app/login",
-        { username }
-      );
-
-      const token = response.data.token;
-      await SecureStore.setItemAsync("userToken", token);
+      // Guardamos token y usuario en almacenamiento seguro
+      await SecureStore.setItemAsync("userToken", tokenFijo);
       await SecureStore.setItemAsync("username", username);
-      setUser({ username, token });
+      setUser({ username, token: tokenFijo });
     } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Error durante el inicio de sesión:", error);
       throw new Error("No se pudo iniciar sesión. Verifica tus credenciales.");
     }
   };
@@ -62,11 +58,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  // Cargar usuario y token desde almacenamiento seguro al iniciar la app
   useEffect(() => {
     const loadUser = async () => {
       const token = await SecureStore.getItemAsync("userToken");
       const username = await SecureStore.getItemAsync("username");
-      if (token && username) {
+
+      // Si el token no existe, usamos el token fijo para desarrollo
+      if (!token || !username) {
+        setUser({ username: "UsuarioFijo", token: tokenFijo });
+      } else {
         setUser({ username, token });
       }
     };

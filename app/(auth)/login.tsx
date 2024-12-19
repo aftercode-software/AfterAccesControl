@@ -36,6 +36,7 @@ export default function Login() {
 
       Alert.alert("Éxito", `Bienvenido, ${username}!`);
       const { token } = response.data;
+      console.log("token", token);
       await SecureStore.setItemAsync("userToken", String(token));
 
       setUser({ username, token });
