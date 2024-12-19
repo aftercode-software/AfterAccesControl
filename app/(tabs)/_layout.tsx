@@ -1,25 +1,15 @@
-import { View, Text, Image } from "react-native";
+import { View } from "react-native";
 import React from "react";
-import { Tabs, Redirect } from "expo-router";
+import { Tabs } from "expo-router";
 import icons from "@/constants/icons";
-
-const TabIcon = ({ IconComponent, color, name, focused }) => {
-  return (
-    <View style={{ alignItems: "center" }}>
-      <IconComponent color={color} />
-      <Text className={`text-xs ${focused ? "text-primary" : "text-gray-500"}`}>
-        {name}
-      </Text>
-    </View>
-  );
-};
+import TabIcon from "@/components/TabIcon";
 
 const TabsLayout = () => {
   return (
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
-        tabBarActiveTintColor: "#53B175",
+        tabBarActiveTintColor: "#F64C95",
         tabBarInactiveTintColor: "#BDBDBD",
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
@@ -28,7 +18,10 @@ const TabsLayout = () => {
           borderTopLeftRadius: 10,
           borderTopRightRadius: 10,
           overflow: "hidden",
-          paddingHorizontal: 20,
+          paddingHorizontal: 10,
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
       }}
     >
@@ -38,26 +31,34 @@ const TabsLayout = () => {
           title: "Ingreso",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              IconComponent={icons.IncomeIcon}
-              color={color}
-              name="Ingreso"
-              focused={focused}
-            />
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <TabIcon
+                IconComponent={icons.IncomeIcon}
+                color={color}
+                name="Ingreso"
+                focused={focused}
+              />
+            </View>
           ),
         }}
       />
 
       <Tabs.Screen
-        name="egreso"
+        name="salida"
         options={{
-          title: "Egreso",
+          title: "Salida",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
               IconComponent={icons.EgressIcon}
               color={color}
-              name="Egreso"
+              name="Salida"
               focused={focused}
             />
           ),

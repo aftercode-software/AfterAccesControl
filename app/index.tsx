@@ -1,20 +1,63 @@
-import { Button, ButtonText } from "@/components/ui/button";
-import { Link } from "expo-router";
-import { View, Text } from "react-native";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import React, { useEffect, useState, useRef } from "react";
+import { View, Animated } from "react-native";
+import { router } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
+import "global.css";
 
-export default function HomeScreen() {
+export default function Index() {
+  const { user } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
+  const rotation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      if (user) {
+        router.replace("/ingreso");
+      } else {
+        router.replace("/login");
+      }
+    }
+  }, [isMounted, user]);
+
+  useEffect(() => {
+    const rotateAnimation = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    );
+    rotateAnimation.start();
+
+    return () => rotateAnimation.stop();
+  }, [rotation]);
+
+  const rotateInterpolate = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
   return (
-    <GluestackUIProvider mode="light">
-      <View>
-        <Text className="text-3xl p-4 text-black">Home</Text>
-        <Link href="/login" className="text-blue-500">
-          Login
-        </Link>
-        <Button size="md" variant="solid" action="primary">
-          <ButtonText>nashe</ButtonText>
-        </Button>
-      </View>
-    </GluestackUIProvider>
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#fff",
+      }}
+    >
+      <Animated.Image
+        source={require("/assets/logo2.png")}
+        style={{
+          width: 200,
+          height: 200,
+          transform: [{ rotate: rotateInterpolate }],
+        }}
+      />
+    </View>
   );
 }

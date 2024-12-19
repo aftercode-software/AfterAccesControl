@@ -1,50 +1,44 @@
 import React, { useContext, useState } from "react";
-import { View, Text, Alert, TouchableOpacity, Image } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { Button, ButtonText } from "@/components/ui/button";
 import { FormControl } from "@/components/ui/form-control";
 import { Input, InputField } from "@/components/ui/input";
 import { VStack } from "@/components/ui/vstack";
-import axios from "axios";
-import * as SecureStore from "expo-secure-store";
 import { AuthContext } from "@/context/AuthContext";
 import { router } from "expo-router";
+import { useToast } from "react-native-toast-notifications";
 
 export default function Login() {
-  const { setUser } = useContext(AuthContext) ?? {};
-  if (!setUser) {
-    throw new Error("AuthContext no está disponible.");
-  }
-
+  const { login } = useContext(AuthContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const toast = useToast();
+
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
-      Alert.alert("Error", "Por favor, completa todos los campos.");
+      toast.show("Por favor, completa todos los campos.", {
+        type: "danger",
+        placement: "top",
+      });
       return;
     }
 
     setLoading(true);
+
     try {
-      const response = await axios.post(
-        "https://backend-afteraccess.vercel.app/login",
-        { username, password }
-      );
-      console.log("response", response);
-
-      Alert.alert("Éxito", `Bienvenido, ${username}!`);
-      const { token } = response.data;
-      await SecureStore.setItemAsync("userToken", String(token));
-
-      setUser({ username, token });
-      router.replace("/home");
+      const success = await login(username, password);
+      if (success) {
+        toast.show("Inicio de sesión exitoso.", {
+          type: "success",
+          placement: "top",
+        });
+        router.replace("/ingreso");
+      }
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Inicio de sesión fallido. Por favor, verifica tu usuario y contraseña.";
-      Alert.alert("Error", errorMessage);
+      Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
     }
@@ -54,13 +48,6 @@ export default function Login() {
     <GluestackUIProvider mode="light">
       <View className="flex items-center justify-center h-full p-4">
         <View className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
-          {/* <View className="flex items-center justify-center mb-20">
-            <Image
-              source={require("@/assets/logo.png")}
-              className="w-48 h-auto"
-              resizeMode="contain"
-            />
-          </View> */}
           <Text className="text-4xl font-bold text-center text-black mb-4">
             AfterAccess
           </Text>

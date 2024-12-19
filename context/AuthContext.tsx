@@ -15,13 +15,13 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
+export const AuthContext = createContext<AuthContextType>(
+  {} as AuthContextType
 );
 
 export const useAuth = (): AuthContextType => {
@@ -38,18 +38,23 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = async (username: string): Promise<void> => {
+  const login = async (
+    username: string,
+    password: string
+  ): Promise<boolean> => {
     try {
       const response = await axios.post(
         "https://backend-afteraccess.vercel.app/login",
-        { username }
+        { username, password }
       );
 
-      const token = response.data.token;
+      const { token } = response.data.token;
       await SecureStore.setItemAsync("userToken", token);
       await SecureStore.setItemAsync("username", username);
       setUser({ username, token });
+      return true;
     } catch (error) {
       console.error("Error during login:", error);
       throw new Error("No se pudo iniciar sesión. Verifica tus credenciales.");
@@ -69,6 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token && username) {
         setUser({ username, token });
       }
+      setLoading(false);
     };
     loadUser();
   }, []);
