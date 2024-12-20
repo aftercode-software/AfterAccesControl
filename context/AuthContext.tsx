@@ -50,7 +50,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         { username, password }
       );
 
-      const { token } = response.data.token;
+      const { token } = response.data;
+
       await SecureStore.setItemAsync("userToken", token);
       await SecureStore.setItemAsync("username", username);
       setUser({ username, token });
