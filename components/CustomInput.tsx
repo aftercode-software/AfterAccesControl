@@ -1,5 +1,4 @@
 import { TextInput, View, Text } from "react-native";
-
 import { VStack } from "./ui/vstack";
 
 export default function CustomInput({
@@ -14,16 +13,17 @@ export default function CustomInput({
   onChangeText: (text: string) => void;
 }) {
   return (
-    <VStack className="flex-[1.4]">
-      <Text className="text-[1.0rem] pl-1 font-bold text-gray-800 mb-1 font-inter">
+    <VStack className="flex-[1.4] space-y-1">
+      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
         {tittle}
       </Text>
-      <View className="w-full border rounded-xl focus-within:border-slate-500 focus-within:ring-1 focus-within:ring-primary">
+      <View>
         <TextInput
           placeholder={placeholder}
           value={value}
           onChangeText={(text) => onChangeText(text)}
-          className="w-full h-12 px-4 text-base text-gray-900 placeholder-gray-500 rounded-lg focus:outline-none font-inter"
+          style={{ borderRadius: 10, borderWidth: 1.5, borderColor: "#ccc" }}
+          className="w-full h-12 px-4 text-base"
         />
       </View>
     </VStack>

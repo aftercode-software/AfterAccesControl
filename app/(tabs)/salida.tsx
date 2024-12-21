@@ -7,40 +7,67 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useData } from "@/context/DataContext";
 import { MovimientoServer } from "@/interfaces/interfaces";
 import ModalComponent from "@/components/Modal";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import { ArrowUp, Car, Tractor, Truck } from "lucide-react-native";
 
 export default function Salida() {
-  const { getSentData } = useData();
+  const { getSentData, marcarSalida } = useData();
   const [data, setData] = useState<MovimientoServer[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedData, setSelectedData] = useState<MovimientoServer | null>(
     null
   );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await getSentData();
-        setData(result);
-      } catch (error) {
-        console.error("Error al obtener datos enviados:", error);
-      }
-    };
+  const getVehicleIcon = (type: string) => {
+    switch (type) {
+      case "transganado":
+        return <Tractor color={"#000"} />;
+      case "camion":
+        return <Truck color={"#000"} />;
+      case "camioneta":
+        return <Car color={"#000"} />;
+      default:
+        return null;
+    }
+  };
 
-    fetchData();
-  }, [getSentData]);
+  const fetchData = async () => {
+    try {
+      const result = await getSentData();
+      setData(result);
+    } catch (error) {
+      console.error("Error al obtener datos enviados:", error);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   const handleCardPress = (item: MovimientoServer) => {
     setSelectedData(item);
     setIsModalVisible(true);
   };
 
-  const handleMarcarSalida = () => {
-    console.log("Salida registrada para:", selectedData);
-    setIsModalVisible(false);
+  const handleMarcarSalida = async () => {
+    if (!selectedData) return;
+
+    try {
+      await marcarSalida(selectedData.id);
+
+      const updatedData = data.filter((item) => item.id !== selectedData.id);
+      setData(updatedData);
+
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error("Error al marcar salida:", error);
+    }
   };
 
   return (
@@ -48,19 +75,20 @@ export default function Salida() {
       <ScrollView nestedScrollEnabled>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="p-4"
         >
-          <View className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg mx-auto pt-10">
-            <Text className="text-4xl text-left mb-5 font-inter font-bold">
-              Marcar salida
+          <View className="w-full bg-white p-6 shadow-lg pt-20">
+            <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
+              Salida <ArrowUp color={"#000"} />
             </Text>
-
             {data.map((item) => (
               <TouchableOpacity
                 key={item.id}
-                className="bg-white p-4 my-2 rounded-lg shadow-md"
+                className="bg-white p-4 my-2 rounded-lg shadow-md flex-row items-center"
                 onPress={() => handleCardPress(item)}
               >
+                <View className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                  {getVehicleIcon(item.vehiculo)}
+                </View>
                 <Text className="text-lg font-semibold font-inter">
                   {item.chapa} - {item.nombre}
                 </Text>

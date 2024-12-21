@@ -18,6 +18,7 @@ import {
   Inter_900Black,
 } from "@expo-google-fonts/inter";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CheckCheck, SquareX, TriangleAlert } from "lucide-react-native";
 
 export default function Layout() {
   const [fontsLoaded] = useFonts({
@@ -38,7 +39,16 @@ export default function Layout() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ToastProvider>
+      <ToastProvider
+        placement="top"
+        offset={50}
+        successColor="green"
+        successIcon={<CheckCheck color={"#fff"} />}
+        warningColor="orange"
+        warningIcon={<TriangleAlert color={"#fff"} />}
+        dangerColor="#a53333"
+        dangerIcon={<SquareX color={"#fff"} className="pr-2" />}
+      >
         <AuthProvider>
           <DataProvider>
             <GluestackUIProvider mode="light">

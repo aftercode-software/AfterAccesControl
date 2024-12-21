@@ -1,0 +1,30 @@
+export const popularBrands = [
+  "Audi",
+  "BMW",
+  "Chevrolet",
+  "Citroën",
+  "Dodge",
+  "Fiat",
+  "Ford",
+  "Honda",
+  "Hyundai",
+  "Isuzu",
+  "Jeep",
+  "Kia",
+  "Land Rover",
+  "Mazda",
+  "Mercedes-Benz",
+  "Mitsubishi",
+  "Nissan",
+  "Peugeot",
+  "Renault",
+  "Subaru",
+  "Suzuki",
+  "Toyota",
+  "Volkswagen",
+  "Volvo",
+  "Otra",
+];
+
+export const vehicleTypes = ["transganado", "camion", "camioneta"];
+export const paymentTypes = ["efectivo", "boleta", "falta pagar"];

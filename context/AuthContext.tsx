@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { useToast } from "react-native-toast-notifications";
 
 interface User {
   username: string;
@@ -33,6 +34,7 @@ export const useAuth = (): AuthContextType => {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const toast = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       console.error("Error during login:", error);
-      throw new Error("No se pudo iniciar sesión. Verifica tus credenciales.");
+      throw new Error("Usuario o contraseña incorrectos");
     }
   };
 

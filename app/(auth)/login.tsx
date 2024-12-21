@@ -29,14 +29,16 @@ export default function Login() {
     try {
       const success = await login(username, password);
       if (success) {
-        toast.show("Inicio de sesión exitoso.", {
+        toast.show("Inicio exitoso", {
           type: "success",
           placement: "top",
         });
         router.replace("/ingreso");
       }
     } catch (error) {
-      Alert.alert("Error", error.message);
+      toast.show(error.message, {
+        type: "danger",
+      });
     } finally {
       setLoading(false);
     }

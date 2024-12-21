@@ -1,5 +1,4 @@
 import { View, Text } from "react-native";
-
 import { VStack } from "./ui/vstack";
 import { Picker } from "@react-native-picker/picker";
 
@@ -20,16 +19,36 @@ export default function CustomPicker({
 }) {
   return (
     <VStack className={"flex-1 " + className}>
-      <Text className="text-[1.0rem] pl-1 font-bold text-gray-800 mb-1 font-inter">
+      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
         {tittle}
       </Text>
-      <View className="border rounded-xl border-slate-500 h-14">
+      <View
+        style={{
+          borderRadius: 10,
+          borderWidth: 1.5,
+          borderColor: "#ccc",
+          height: 50,
+          overflow: "hidden",
+          justifyContent: "center",
+        }}
+      >
         <Picker
-          placeholder="Vehiculo"
           selectedValue={value}
           onValueChange={(text) => onChangeText(text)}
+          style={{
+            width: "100%",
+            color: "#333",
+            fontSize: 14,
+          }}
+          itemStyle={{
+            fontSize: 14,
+          }}
         >
-          <Picker.Item label="Vehiculo" value="" />
+          <Picker.Item
+            label={placeholder || "Seleccione una opción"}
+            value=""
+            style={{ color: "#888" }}
+          />
           {arrayOpciones.map((type) => (
             <Picker.Item
               key={type}

@@ -11,15 +11,22 @@ import NetInfo from "@react-native-community/netinfo";
 import { useToast } from "react-native-toast-notifications";
 import { Movimiento, MovimientoServer } from "@/interfaces/interfaces";
 import { AuthContext } from "./AuthContext";
+import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
 
 interface DataContextProps {
+  pendingData: Movimiento[];
   saveFormData: (data: Movimiento) => Promise<void>;
   getSentData: () => Promise<MovimientoServer[]>;
+  marcarSalida: (id: number) => Promise<void>;
+  updateSentData: () => Promise<void>;
 }
 
 export const DataContext = createContext<DataContextProps>({
+  pendingData: [],
   saveFormData: async () => {},
   getSentData: async () => [],
+  marcarSalida: async () => {},
+  updateSentData: async () => {},
 });
 
 export const useData = (): DataContextProps => {
@@ -140,7 +147,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     if (pendingData.length === 0) return;
 
     const failedData: Movimiento[] = [];
-    const sentData: Movimiento[] = [];
+    const sentData: MovimientoServer[] = [];
 
     for (const data of pendingData) {
       try {
@@ -149,6 +156,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           data,
           {
             headers: {
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           }
@@ -189,7 +197,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       JSON.stringify(updatedSentData)
     );
 
-    setPendingData(failedData);
+    setPendingData(failedData); // Actualiza el estado con los datos que fallaron
   };
 
   const getSentData = async (): Promise<MovimientoServer[]> => {
@@ -197,8 +205,89 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     return storedData ? JSON.parse(storedData) : [];
   };
 
+  const marcarSalida = async (id: number): Promise<void> => {
+    try {
+      const { currentDate, currentTime } = getCurrentDateTimeInParaguay();
+
+      const movimientoSalida = {
+        id,
+        horaSalida: currentTime,
+        fechaSalida: currentDate,
+      };
+
+      const isConnected = await NetInfo.fetch().then(
+        (state) => state.isConnected
+      );
+
+      if (isConnected) {
+        console.log("Marking salida:", movimientoSalida);
+        const response = await axios.put(
+          `https://backend-afteraccess.vercel.app/movimiento`,
+          movimientoSalida,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          toast.show("Salida exitosa", {
+            type: "success",
+            placement: "top",
+          });
+
+          const storedData = await AsyncStorage.getItem("movimientosEnviados");
+          if (storedData) {
+            const movimientos = JSON.parse(storedData) as MovimientoServer[];
+            const updatedMovimientos = movimientos.filter(
+              (mov) => mov.id !== id
+            );
+            await AsyncStorage.setItem(
+              "movimientosEnviados",
+              JSON.stringify(updatedMovimientos)
+            );
+          }
+        } else {
+          throw new Error("Error en la respuesta del servidor");
+        }
+      } else {
+        toast.show("Sin conexión. No se pudo marcar la salida.", {
+          type: "warning",
+          placement: "top",
+        });
+        throw new Error("Sin conexión");
+      }
+    } catch (error) {
+      console.error("Error al marcar salida:", error);
+      toast.show(
+        error.message === "Sin conexión"
+          ? "Sin conexión. Reintenta cuando tengas internet."
+          : "Error al marcar salida.",
+        {
+          type: "danger",
+          placement: "top",
+        }
+      );
+      throw error;
+    }
+  };
+
+  const updateSentData = async () => {
+    await getSentData();
+  };
+
   return (
-    <DataContext.Provider value={{ saveFormData, getSentData }}>
+    <DataContext.Provider
+      value={{
+        saveFormData,
+        getSentData,
+        marcarSalida,
+        updateSentData,
+        pendingData,
+      }}
+    >
       {children}
     </DataContext.Provider>
   );
