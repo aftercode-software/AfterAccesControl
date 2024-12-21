@@ -8,13 +8,20 @@ const TabsLayout = () => {
   return (
     <Tabs
       screenOptions={{
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "600",
+          marginBottom: 6,
+          fontFamily: "Inter_500Medium",
+        },
         tabBarActiveTintColor: "#F64C95",
         tabBarInactiveTintColor: "#BDBDBD",
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
           height: 60,
           backgroundColor: "#fff",
+          paddingTop: 10,
           borderTopLeftRadius: 10,
           borderTopRightRadius: 10,
           overflow: "hidden",
@@ -22,6 +29,8 @@ const TabsLayout = () => {
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
+          alignItems: "center",
+          justifyContent: "center",
         },
       }}
     >

@@ -17,6 +17,7 @@ import {
   Inter_800ExtraBold,
   Inter_900Black,
 } from "@expo-google-fonts/inter";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Layout() {
   const [fontsLoaded] = useFonts({
@@ -36,14 +37,16 @@ export default function Layout() {
   }
 
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <DataProvider>
-          <GluestackUIProvider mode="light">
-            <Slot />
-          </GluestackUIProvider>
-        </DataProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ToastProvider>
+        <AuthProvider>
+          <DataProvider>
+            <GluestackUIProvider mode="light">
+              <Slot />
+            </GluestackUIProvider>
+          </DataProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import React from "react";
 
 interface TabIconProps {
@@ -17,7 +17,7 @@ const TabIcon: React.FC<TabIconProps> = ({
   return (
     <View style={styles.container}>
       <IconComponent color={color} />
-      <Text style={[styles.text, focused && styles.focusedText]}>{name}</Text>
+      {/* <Text style={[styles.text, focused && styles.focusedText]}>{name}</Text> */}
     </View>
   );
 };

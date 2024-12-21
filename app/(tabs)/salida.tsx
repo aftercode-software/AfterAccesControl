@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from "react-native";
 import { useData } from "@/context/DataContext";
 import { MovimientoServer } from "@/interfaces/interfaces";
 import ModalComponent from "@/components/Modal";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 
 export default function Salida() {
   const { getSentData } = useData();
@@ -36,29 +44,38 @@ export default function Salida() {
   };
 
   return (
-    <View className="flex-1 p-5 bg-gray-100">
-      <Text className="text-4xl  text-center mb-5 font-inter font-bold">
-        Personas Registradas
-      </Text>
-
-      {data.map((item) => (
-        <TouchableOpacity
-          key={item.id}
-          className="bg-white p-4 my-2 rounded-lg shadow-md"
-          onPress={() => handleCardPress(item)}
+    <GluestackUIProvider mode="light">
+      <ScrollView nestedScrollEnabled>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="p-4"
         >
-          <Text className="text-lg font-semibold font-inter">
-            {item.chapa} - {item.nombre}
-          </Text>
-        </TouchableOpacity>
-      ))}
+          <View className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg mx-auto pt-10">
+            <Text className="text-4xl text-left mb-5 font-inter font-bold">
+              Marcar salida
+            </Text>
 
-      <ModalComponent
-        isModalVisible={isModalVisible}
-        setIsModalVisible={setIsModalVisible}
-        selectedData={selectedData}
-        handleMarcarSalida={handleMarcarSalida}
-      />
-    </View>
+            {data.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                className="bg-white p-4 my-2 rounded-lg shadow-md"
+                onPress={() => handleCardPress(item)}
+              >
+                <Text className="text-lg font-semibold font-inter">
+                  {item.chapa} - {item.nombre}
+                </Text>
+              </TouchableOpacity>
+            ))}
+
+            <ModalComponent
+              isModalVisible={isModalVisible}
+              setIsModalVisible={setIsModalVisible}
+              selectedData={selectedData}
+              handleMarcarSalida={handleMarcarSalida}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </ScrollView>
+    </GluestackUIProvider>
   );
 }
