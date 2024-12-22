@@ -2,7 +2,9 @@
   "expo": {
     "name": "AfterAccessControl",
     "slug": "AfterAccessControl",
-    "scheme": "AfterAccessControl",
+    "scheme": [
+      "afteraccesscontrol"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +22,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "aftercode.AfterAccessControl"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,6 +31,14 @@
     "plugins": [
       "expo-router",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "87d3c623-d648-4dbf-aeb7-aaf1417dd788"
+      }
+    }
   }
 }
