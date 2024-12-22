@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { View, Text, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { Button, ButtonText } from "@/components/ui/button";
 import { FormControl } from "@/components/ui/form-control";
@@ -36,7 +36,12 @@ export default function Login() {
         router.replace("/ingreso");
       }
     } catch (error) {
-      toast.show(error.message, {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error inesperado durante el inicio de sesión.";
+
+      toast.show(errorMessage, {
         type: "danger",
       });
     } finally {

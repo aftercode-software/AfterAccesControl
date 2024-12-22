@@ -25,7 +25,6 @@ export const getAllChapas = async (
       );
     }
 
-    console.log("Datos recibidos:", response.data);
     return response.data;
   } catch (error: any) {
     console.error("Error al obtener chapas:", error.message || error);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -72,11 +72,14 @@ export default function Salida() {
 
   return (
     <GluestackUIProvider mode="light">
-      <ScrollView nestedScrollEnabled>
+      <ScrollView
+        nestedScrollEnabled
+        contentContainerStyle={{ flexGrow: 1, backgroundColor: "#fff" }}
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <View className="w-full bg-white p-6 shadow-lg pt-20">
+          <View className="w-full bg-white p-6  pt-20">
             <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
               Salida <ArrowUp color={"#000"} />
             </Text>

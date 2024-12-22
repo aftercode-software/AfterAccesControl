@@ -27,7 +27,6 @@ export default function BuscadorChapa({
 
         <SelectList
           setSelected={(val: string) => {
-            console.log("val", val.split(" - ")[0].trim());
             manejarSeleccionChapa(val.split(" - ")[0].trim());
             setSelected(val);
           }}

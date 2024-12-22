@@ -8,12 +8,10 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-
 import { Picker } from "@react-native-picker/picker";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { Button, ButtonText } from "@/components/ui/button";
 import { FormControl } from "@/components/ui/form-control";
-import { Input, InputField } from "@/components/ui/input";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { useToast } from "react-native-toast-notifications";
@@ -69,7 +67,7 @@ export default function Ingreso() {
           setChapas(chapas);
         }
       } catch (error: any) {
-        toast.show("No se pudieron cargar las chapas.", {
+        toast.show("No se pudieron cargar las chapas", {
           type: "danger",
           placement: "top",
         });
@@ -85,7 +83,6 @@ export default function Ingreso() {
       ...prev,
       [field]: value,
     }));
-    console.log("formData", formData);
   };
 
   const shouldShowMonto =
@@ -95,7 +92,6 @@ export default function Ingreso() {
   const shouldShowBoleta = formData.pago === "boleta";
 
   const handleSubmit = async () => {
-    console.log("formData", formData);
     try {
       const camposObligatorios: (keyof typeof formData)[] = [
         "nombre",

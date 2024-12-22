@@ -82,7 +82,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const saveFormData = async (movimiento: Movimiento) => {
-    console.log("Saving form data:", movimiento);
     try {
       const isConnected = await NetInfo.fetch().then(
         (state) => state.isConnected
@@ -99,14 +98,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             },
           }
         );
-        console.log("Response:", response.data);
 
         const movimientoConID: MovimientoServer = {
           ...movimiento,
           id: response.data.id,
         };
 
-        toast.show("Datos enviados correctamente", {
+        toast.show("Ingreso exitoso", {
           type: "success",
           placement: "top",
         });
@@ -197,7 +195,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       JSON.stringify(updatedSentData)
     );
 
-    setPendingData(failedData); // Actualiza el estado con los datos que fallaron
+    setPendingData(failedData);
   };
 
   const getSentData = async (): Promise<MovimientoServer[]> => {
@@ -220,7 +218,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       );
 
       if (isConnected) {
-        console.log("Marking salida:", movimientoSalida);
         const response = await axios.put(
           `https://backend-afteraccess.vercel.app/movimiento`,
           movimientoSalida,
@@ -261,16 +258,22 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error("Error al marcar salida:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error inesperado al marcar la salida.";
+
       toast.show(
-        error.message === "Sin conexión"
+        errorMessage === "Sin conexión"
           ? "Sin conexión. Reintenta cuando tengas internet."
-          : "Error al marcar salida.",
+          : errorMessage,
         {
           type: "danger",
           placement: "top",
         }
       );
-      throw error;
+      throw new Error(errorMessage);
     }
   };
 
