@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  loading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType>(
@@ -68,18 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const loadUser = async () => {
-      const token = await SecureStore.getItemAsync("userToken");
-      const username = await SecureStore.getItemAsync("username");
-      if (token && username) {
-        setUser({ username, token });
+      try {
+        const token = await SecureStore.getItemAsync("userToken");
+        const username = await SecureStore.getItemAsync("username");
+        if (token && username) {
+          setUser({ username, token });
+        }
+      } catch (error) {
+        toast.show("Error al cargar usuario", { type: "danger" });
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     loadUser();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

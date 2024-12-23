@@ -23,7 +23,7 @@ import { router } from "expo-router";
 import CustomInput from "@/components/CustomInput";
 import CustomPicker from "@/components/CustomPicker";
 import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
-import { ArrowDown, Search } from "lucide-react-native";
+import { ArrowDown, CloudAlert, Search } from "lucide-react-native";
 import BuscadorChapa from "@/components/BuscadorChapa";
 import { paymentTypes, popularBrands, vehicleTypes } from "@/constants/ingreso";
 
@@ -31,7 +31,7 @@ export default function Ingreso() {
   const [chapas, setChapas] = useState<Movimiento[]>([]);
   const toast = useToast();
   const dataContext = useData();
-  const { saveFormData } = dataContext;
+  const { saveFormData, pendingData, retryPendingData } = dataContext;
   const { user } = useContext(AuthContext) ?? {};
   const token = user?.token;
 
@@ -186,9 +186,48 @@ export default function Ingreso() {
           className=""
         >
           <View className="w-full bg-white p-6 shadow-lg pt-20">
-            <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
-              Ingreso <ArrowDown color={"#000"} />
-            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 6,
+                justifyContent: "space-between",
+              }}
+            >
+              <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
+                Ingreso
+                <ArrowDown color="#000" />
+              </Text>
+
+              {pendingData.length > 0 && (
+                <View
+                  onTouchEnd={() => retryPendingData()}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginLeft: 8,
+                    backgroundColor: "#fdf6b2",
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 10,
+                    marginBottom: 16,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#a36b2f",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                      marginRight: 4,
+                    }}
+                  >
+                    {pendingData.length}
+                  </Text>
+                  <CloudAlert color="#a36b2f" />
+                </View>
+              )}
+            </View>
+
             <FormControl>
               <VStack space="lg">
                 <HStack className="flex-1 items-start">

@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import "global.css";
 
 export default function Index() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const rotation = useRef(new Animated.Value(0)).current;
 
@@ -14,20 +14,20 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    if (isMounted) {
+    if (isMounted && !loading) {
       if (user) {
         router.replace("/ingreso");
       } else {
         router.replace("/login");
       }
     }
-  }, [isMounted, user]);
+  }, [isMounted, user, loading]);
 
   useEffect(() => {
     const rotateAnimation = Animated.loop(
       Animated.timing(rotation, {
-        toValue: 1,
-        duration: 1000,
+        toValue: 2,
+        duration: 2000,
         useNativeDriver: true,
       })
     );
@@ -54,7 +54,7 @@ export default function Index() {
         source={require("/assets/logo2.png")}
         style={{
           width: 200,
-          height: 200,
+          height: 220,
           transform: [{ rotate: rotateInterpolate }],
         }}
       />

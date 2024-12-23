@@ -38,6 +38,7 @@ export default function Salida() {
   const fetchData = async () => {
     try {
       const result = await getSentData();
+      console.log("Datos enviados:", result);
       setData(result);
     } catch (error) {
       console.error("Error al obtener datos enviados:", error);

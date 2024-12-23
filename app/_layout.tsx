@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Slot } from "expo-router";
 import { AuthProvider } from "../context/AuthContext";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { ToastProvider } from "react-native-toast-notifications";
 import { DataProvider } from "@/context/DataContext";
-import AppLoading from "expo-app-loading";
+import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
   Inter_100Thin,
@@ -20,6 +20,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CheckCheck, SquareX, TriangleAlert } from "lucide-react-native";
 
+// Prevenir que el Splash Screen se oculte automáticamente
+SplashScreen.preventAutoHideAsync();
+
 export default function Layout() {
   const [fontsLoaded] = useFonts({
     Inter_100Thin,
@@ -33,8 +36,14 @@ export default function Layout() {
     Inter_900Black,
   });
 
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync(); // Oculta el Splash Screen cuando las fuentes estén cargadas
+    }
+  }, [fontsLoaded]);
+
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null; // Mostrar nada hasta que las fuentes estén listas
   }
 
   return (

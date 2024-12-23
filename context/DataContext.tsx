@@ -19,6 +19,7 @@ interface DataContextProps {
   getSentData: () => Promise<MovimientoServer[]>;
   marcarSalida: (id: number) => Promise<void>;
   updateSentData: () => Promise<void>;
+  retryPendingData: () => Promise<void>;
 }
 
 export const DataContext = createContext<DataContextProps>({
@@ -27,6 +28,7 @@ export const DataContext = createContext<DataContextProps>({
   getSentData: async () => [],
   marcarSalida: async () => {},
   updateSentData: async () => {},
+  retryPendingData: async () => {},
 });
 
 export const useData = (): DataContextProps => {
@@ -48,26 +50,39 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       const isConnected = await NetInfo.fetch().then(
         (state) => state.isConnected
       );
+      console.log("Conexión detectada:", isConnected);
       if (isConnected) {
         await sendPendingData();
       }
     };
 
     const loadPendingData = async () => {
-      const storedData = await AsyncStorage.getItem("movimientosPendientes");
-      if (storedData) {
-        setPendingData(JSON.parse(storedData));
-        syncData();
+      try {
+        const storedData = await AsyncStorage.getItem("movimientosPendientes");
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          console.log("Datos cargados desde AsyncStorage:", parsedData);
+          setPendingData(parsedData);
+        } else {
+          console.log("No hay datos pendientes en AsyncStorage.");
+          setPendingData([]);
+        }
+      } catch (error) {
+        console.error(
+          "Error al cargar datos pendientes desde AsyncStorage:",
+          error
+        );
       }
     };
-
     const startSyncTimer = () => {
-      const interval = setInterval(syncData, 5 * 60 * 1000); // Cada 5 minutos
+      console.log("Iniciando sincronización automática cada 60 segundos");
+      const interval = setInterval(syncData, 60000); // Cada 60 segundos
       return () => clearInterval(interval);
     };
 
     loadPendingData();
     const unsubscribe = NetInfo.addEventListener((state) => {
+      console.log("Cambio en la conexión detectado:", state.isConnected);
       if (state.isConnected) {
         syncData();
       }
@@ -124,7 +139,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           placement: "top",
         });
 
+        console.log("Guardando movimiento localmente:", movimiento);
+        console.log("Datos pendientes:", pendingData);
         const updatedData = [...pendingData, movimiento];
+        console.log("Datos actualizados:", updatedData);
         await AsyncStorage.setItem(
           "movimientosPendientes",
           JSON.stringify(updatedData)
@@ -132,16 +150,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setPendingData(updatedData);
       }
     } catch (error) {
-      console.error("Error al enviar datos:", error);
-      toast.show("Error al enviar datos.", {
+      console.error("Error al guardar movimiento:", error);
+      toast.show("Error al guardar movimiento.", {
         type: "danger",
         placement: "top",
       });
-      throw new Error("Error al enviar datos.");
     }
   };
 
   const sendPendingData = async () => {
+    console.log("pendi", pendingData);
     if (pendingData.length === 0) return;
 
     const failedData: Movimiento[] = [];
@@ -166,17 +184,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             id: response.data.id,
           };
           sentData.push(movimientoEnviado);
-          toast.show(`Movimiento sincronizado: ID ${response.data.id}`, {
-            type: "success",
-            placement: "top",
-          });
         }
       } catch (error) {
-        console.error("Error al sincronizar datos:", error);
+        console.error(
+          "Error al sincronizar movimiento en segundo plano:",
+          error
+        );
         failedData.push(data);
-        toast.show("Error al sincronizar un movimiento.", {
-          type: "danger",
-        });
       }
     }
 
@@ -219,7 +233,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
       if (isConnected) {
         const response = await axios.put(
-          `https://backend-afteraccess.vercel.app/movimiento`,
+          "https://backend-afteraccess.vercel.app/movimiento",
           movimientoSalida,
           {
             headers: {
@@ -258,23 +272,15 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error("Error al marcar salida:", error);
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Ocurrió un error inesperado al marcar la salida.";
-
-      toast.show(
-        errorMessage === "Sin conexión"
-          ? "Sin conexión. Reintenta cuando tengas internet."
-          : errorMessage,
-        {
-          type: "danger",
-          placement: "top",
-        }
-      );
-      throw new Error(errorMessage);
+      toast.show("Error al marcar salida.", {
+        type: "danger",
+        placement: "top",
+      });
     }
+  };
+
+  const retryPendingData = async () => {
+    await sendPendingData();
   };
 
   const updateSentData = async () => {
@@ -284,11 +290,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   return (
     <DataContext.Provider
       value={{
+        pendingData,
         saveFormData,
         getSentData,
         marcarSalida,
         updateSentData,
-        pendingData,
+        retryPendingData,
       }}
     >
       {children}

@@ -37,7 +37,7 @@ export default function Profile() {
           style={{ flex: 1 }}
         >
           <View className="w-full bg-white p-6 shadow-lg pt-20 items-center flex-1">
-            <Text className="text-4xl mb-20 font-bold text-left text-black font-inter">
+            <Text className="text-4xl mb-20 w-full font-bold text-left text-black font-inter">
               Perfil <UserPen color={"#000"} />
             </Text>
 
