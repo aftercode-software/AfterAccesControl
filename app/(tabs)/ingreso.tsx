@@ -44,7 +44,7 @@ export default function Ingreso() {
     chapa: "",
     destino: "",
     fechaIngreso: "",
-    monto: 0,
+    monto: 0 as number | "",
     pago: "",
     boleta: "",
     observaciones: "",
@@ -140,6 +140,10 @@ export default function Ingreso() {
       formData.fechaIngreso = currentDate;
       formData.horaIngreso = currentTime;
 
+      if (formData.pago === "falta pagar") {
+        formData.monto = "";
+      }
+      console.log("formData", formData);
       await saveFormData(formData as Movimiento);
       setFormData({
         nombre: "",
@@ -332,7 +336,7 @@ export default function Ingreso() {
                         <Picker.Item
                           label={"Seleccione una opción"}
                           value=""
-                          style={{ color: "#888" }}
+                          style={{ color: "#F64C95" }}
                         />
                         {paymentTypes.map((type) => (
                           <Picker.Item

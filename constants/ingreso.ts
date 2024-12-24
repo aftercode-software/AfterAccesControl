@@ -26,5 +26,20 @@ export const popularBrands = [
   "Otra",
 ];
 
-export const vehicleTypes = ["transganado", "camion", "camioneta"];
+export const vehicleTypes = [
+  "transganado",
+  "camion",
+  "camioneta",
+  "grua",
+  "tractor pesado",
+  "2 ejes",
+  "tractor liviano",
+  "camioneta cabina simple",
+  "camioneta doble",
+  "suv",
+  "auto",
+  "moto",
+  "bicicleta",
+  "otro",
+];
 export const paymentTypes = ["efectivo", "boleta", "falta pagar"];

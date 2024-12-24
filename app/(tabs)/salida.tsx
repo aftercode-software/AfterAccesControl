@@ -12,7 +12,14 @@ import { useData } from "@/context/DataContext";
 import { MovimientoServer } from "@/interfaces/interfaces";
 import ModalComponent from "@/components/Modal";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { ArrowUp, Car, Tractor, Truck } from "lucide-react-native";
+import {
+  ArrowUp,
+  Bike,
+  Car,
+  CarFront,
+  Tractor,
+  Truck,
+} from "lucide-react-native";
 
 export default function Salida() {
   const { getSentData, marcarSalida } = useData();
@@ -25,13 +32,25 @@ export default function Salida() {
   const getVehicleIcon = (type: string) => {
     switch (type) {
       case "transganado":
+      case "tractor pesado":
+      case "grua":
         return <Tractor color={"#000"} />;
       case "camion":
+      case "tractor liviano":
+      case "2 ejes":
         return <Truck color={"#000"} />;
       case "camioneta":
+      case "suv":
+      case "camioneta cabina simple":
+      case "camioneta doble":
+      case "automovil":
         return <Car color={"#000"} />;
+      case "moto":
+      case "bicicleta":
+      case "otro":
+        return <Bike color={"#000"} />;
       default:
-        return null;
+        return <CarFront color={"#000"} />;
     }
   };
 

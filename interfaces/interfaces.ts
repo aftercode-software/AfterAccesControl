@@ -9,7 +9,7 @@ export interface Movimiento {
   destino: string;
   pago: "" | "efectivo" | "boleta" | "falta pagar";
   boleta?: string;
-  monto?: number;
+  monto?: number | "";
   observaciones?: string;
   fechaSalida?: string;
   horaSalida?: string;

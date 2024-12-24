@@ -47,7 +47,7 @@ export default function CustomPicker({
           <Picker.Item
             label={placeholder || "Seleccione una opción"}
             value=""
-            style={{ color: "#888" }}
+            style={{ color: "#F64C95" }}
           />
           {arrayOpciones.map((type) => (
             <Picker.Item
