@@ -18,7 +18,6 @@ import { useToast } from "react-native-toast-notifications";
 import { Movimiento } from "@/interfaces/interfaces";
 import { AuthContext } from "@/context/AuthContext";
 import { getAllChapas } from "@/utilities/getChapas";
-import { useData } from "@/context/DataContext";
 import { router } from "expo-router";
 import CustomInput from "@/components/CustomInput";
 import CustomPicker from "@/components/CustomPicker";
@@ -26,6 +25,7 @@ import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
 import { ArrowDown, CloudAlert, Search } from "lucide-react-native";
 import BuscadorChapa from "@/components/BuscadorChapa";
 import { paymentTypes, popularBrands, vehicleTypes } from "@/constants/ingreso";
+import { useData } from "@/hooks/useData";
 
 export default function Ingreso() {
   const [chapas, setChapas] = useState<Movimiento[]>([]);
@@ -143,7 +143,7 @@ export default function Ingreso() {
       if (formData.pago === "falta pagar") {
         formData.monto = "";
       }
-      console.log("formData", formData);
+
       await saveFormData(formData as Movimiento);
       setFormData({
         nombre: "",

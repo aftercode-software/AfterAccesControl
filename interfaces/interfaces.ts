@@ -1,3 +1,13 @@
+export interface DataContextProps {
+  pendingData: Movimiento[];
+  saveFormData: (data: Movimiento) => Promise<void>;
+  getSentData: () => Promise<MovimientoServer[]>;
+  marcarSalida: (id: number) => Promise<void>;
+  updateSentData: () => Promise<void>;
+  getEstadisticas: (opcion: "mensuales" | "hoy") => Promise<Estadisticas>;
+  retryPendingData: () => Promise<void>;
+}
+
 export interface Movimiento {
   chapa: string;
   nombre: string;
@@ -17,4 +27,11 @@ export interface Movimiento {
 
 export interface MovimientoServer extends Movimiento {
   id: number;
+}
+
+export interface Estadisticas {
+  cantidadIngresos: number;
+  cantidadSalidas: number;
+  cantidadEfectivo: number;
+  cantidadBoletas: number;
 }

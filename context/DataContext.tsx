@@ -9,18 +9,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import NetInfo from "@react-native-community/netinfo";
 import { useToast } from "react-native-toast-notifications";
-import { Movimiento, MovimientoServer } from "@/interfaces/interfaces";
+import {
+  DataContextProps,
+  Estadisticas,
+  Movimiento,
+  MovimientoServer,
+} from "@/interfaces/interfaces";
 import { AuthContext } from "./AuthContext";
 import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
-
-interface DataContextProps {
-  pendingData: Movimiento[];
-  saveFormData: (data: Movimiento) => Promise<void>;
-  getSentData: () => Promise<MovimientoServer[]>;
-  marcarSalida: (id: number) => Promise<void>;
-  updateSentData: () => Promise<void>;
-  retryPendingData: () => Promise<void>;
-}
 
 export const DataContext = createContext<DataContextProps>({
   pendingData: [],
@@ -28,16 +24,9 @@ export const DataContext = createContext<DataContextProps>({
   getSentData: async () => [],
   marcarSalida: async () => {},
   updateSentData: async () => {},
+  getEstadisticas: async () => ({} as Estadisticas),
   retryPendingData: async () => {},
 });
-
-export const useData = (): DataContextProps => {
-  const context = useContext(DataContext);
-  if (!context) {
-    throw new Error("useData must be used within a DataProvider");
-  }
-  return context;
-};
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [pendingData, setPendingData] = useState<Movimiento[]>([]);
@@ -50,7 +39,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       const isConnected = await NetInfo.fetch().then(
         (state) => state.isConnected
       );
-      console.log("Conexión detectada:", isConnected);
       if (isConnected) {
         await sendPendingData();
       }
@@ -61,10 +49,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         const storedData = await AsyncStorage.getItem("movimientosPendientes");
         if (storedData) {
           const parsedData = JSON.parse(storedData);
-          console.log("Datos cargados desde AsyncStorage:", parsedData);
           setPendingData(parsedData);
         } else {
-          console.log("No hay datos pendientes en AsyncStorage.");
           setPendingData([]);
         }
       } catch (error) {
@@ -75,14 +61,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     const startSyncTimer = () => {
-      console.log("Iniciando sincronización automática cada 60 segundos");
       const interval = setInterval(syncData, 60000); // Cada 60 segundos
       return () => clearInterval(interval);
     };
 
     loadPendingData();
     const unsubscribe = NetInfo.addEventListener((state) => {
-      console.log("Cambio en la conexión detectado:", state.isConnected);
       if (state.isConnected) {
         syncData();
       }
@@ -139,10 +123,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           placement: "top",
         });
 
-        console.log("Guardando movimiento localmente:", movimiento);
-        console.log("Datos pendientes:", pendingData);
         const updatedData = [...pendingData, movimiento];
-        console.log("Datos actualizados:", updatedData);
+
         await AsyncStorage.setItem(
           "movimientosPendientes",
           JSON.stringify(updatedData)
@@ -159,7 +141,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const sendPendingData = async () => {
-    console.log("pendi", pendingData);
     if (pendingData.length === 0) return;
 
     const failedData: Movimiento[] = [];
@@ -287,6 +268,26 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     await getSentData();
   };
 
+  const getEstadisticas = async (option: "mensuales" | "hoy") => {
+    try {
+      const response = await axios
+        .get(`https://backend-afteraccess.vercel.app/estadisticas-${option}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => res.data);
+
+      return response;
+    } catch (error) {
+      console.error("Error al obtener estadísticas:", error);
+      toast.show("Error al obtener estadísticas.", {
+        type: "danger",
+        placement: "top",
+      });
+    }
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -295,6 +296,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         getSentData,
         marcarSalida,
         updateSentData,
+        getEstadisticas,
         retryPendingData,
       }}
     >

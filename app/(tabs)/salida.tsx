@@ -8,7 +8,6 @@ import {
   Platform,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { useData } from "@/context/DataContext";
 import { MovimientoServer } from "@/interfaces/interfaces";
 import ModalComponent from "@/components/Modal";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
@@ -20,6 +19,7 @@ import {
   Tractor,
   Truck,
 } from "lucide-react-native";
+import { useData } from "@/hooks/useData";
 
 export default function Salida() {
   const { getSentData, marcarSalida } = useData();
@@ -57,7 +57,7 @@ export default function Salida() {
   const fetchData = async () => {
     try {
       const result = await getSentData();
-      console.log("Datos enviados:", result);
+
       setData(result);
     } catch (error) {
       console.error("Error al obtener datos enviados:", error);
@@ -103,6 +103,11 @@ export default function Salida() {
             <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
               Salida <ArrowUp color={"#000"} />
             </Text>
+            {data.length === 0 && (
+              <Text className="text-lg font-semibold text-center mt-96 text-black font-inter">
+                No hay vehículos para marcar salida
+              </Text>
+            )}
             {data.map((item) => (
               <TouchableOpacity
                 key={item.id}
