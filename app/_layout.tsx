@@ -7,43 +7,60 @@ import { DataProvider } from "@/context/DataContext";
 import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
-  Inter_100Thin,
-  Inter_200ExtraLight,
-  Inter_300Light,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
-  Inter_900Black,
-} from "@expo-google-fonts/inter";
+  Poppins_100Thin,
+  Poppins_100Thin_Italic,
+  Poppins_200ExtraLight,
+  Poppins_200ExtraLight_Italic,
+  Poppins_300Light,
+  Poppins_300Light_Italic,
+  Poppins_400Regular,
+  Poppins_400Regular_Italic,
+  Poppins_500Medium,
+  Poppins_500Medium_Italic,
+  Poppins_600SemiBold,
+  Poppins_600SemiBold_Italic,
+  Poppins_700Bold,
+  Poppins_700Bold_Italic,
+  Poppins_800ExtraBold,
+  Poppins_800ExtraBold_Italic,
+  Poppins_900Black,
+  Poppins_900Black_Italic,
+} from "@expo-google-fonts/poppins";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CheckCheck, SquareX, TriangleAlert } from "lucide-react-native";
+import { CheckCheck, CircleX, TriangleAlert } from "lucide-react-native";
 
-// Prevenir que el Splash Screen se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
-  const [fontsLoaded] = useFonts({
-    Inter_100Thin,
-    Inter_200ExtraLight,
-    Inter_300Light,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_800ExtraBold,
-    Inter_900Black,
+  let [fontsLoaded] = useFonts({
+    Poppins_100Thin,
+    Poppins_100Thin_Italic,
+    Poppins_200ExtraLight,
+    Poppins_200ExtraLight_Italic,
+    Poppins_300Light,
+    Poppins_300Light_Italic,
+    Poppins_400Regular,
+    Poppins_400Regular_Italic,
+    Poppins_500Medium,
+    Poppins_500Medium_Italic,
+    Poppins_600SemiBold,
+    Poppins_600SemiBold_Italic,
+    Poppins_700Bold,
+    Poppins_700Bold_Italic,
+    Poppins_800ExtraBold,
+    Poppins_800ExtraBold_Italic,
+    Poppins_900Black,
+    Poppins_900Black_Italic,
   });
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync(); // Oculta el Splash Screen cuando las fuentes estén cargadas
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return null; // Mostrar nada hasta que las fuentes estén listas
+    return null;
   }
 
   return (
@@ -51,12 +68,13 @@ export default function Layout() {
       <ToastProvider
         placement="top"
         offset={50}
+        duration={10000}
         successColor="green"
         successIcon={<CheckCheck color={"#fff"} />}
         warningColor="orange"
         warningIcon={<TriangleAlert color={"#fff"} />}
         dangerColor="#a53333"
-        dangerIcon={<SquareX color={"#fff"} className="pr-2" />}
+        dangerIcon={<CircleX color={"#fff"} className="pr-2" />}
       >
         <AuthProvider>
           <DataProvider>

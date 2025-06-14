@@ -19,9 +19,7 @@ export default function CustomPicker({
 }) {
   return (
     <VStack className={"flex-1 " + className}>
-      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-        {tittle}
-      </Text>
+      <Text className="text-sm px-1 pb-1 text-gray-800 ">{tittle}</Text>
       <View
         style={{
           borderRadius: 10,

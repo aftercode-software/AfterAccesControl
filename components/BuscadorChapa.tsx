@@ -21,7 +21,7 @@ export default function BuscadorChapa({
   return (
     <HStack className="flex-1 items-center gap-2">
       <VStack className="flex-[1] space-y-1">
-        <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
+        <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
           Buscar por Chapa o Cédula
         </Text>
 

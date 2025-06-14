@@ -12,7 +12,7 @@ export default function OverviewBox({
   return (
     <View style={styles.box} className="border-slate-300 border-[1px]">
       <Text className="text-lg text-gray-700">{title}</Text>
-      <Text className="text-2xl mt-2 font-inter font-semibold">
+      <Text className="text-2xl mt-2  font-semibold">
         {moneyStyle ? "$" : ""}
         {value}
       </Text>

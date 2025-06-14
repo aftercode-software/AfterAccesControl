@@ -8,31 +8,12 @@ import React, {
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { useToast } from "react-native-toast-notifications";
-
-interface User {
-  username: string;
-  token: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  loading: boolean;
-}
+import { User } from "@/interfaces/interfaces";
+import { AuthContextType } from "@/interfaces/interfaces";
 
 export const AuthContext = createContext<AuthContextType>(
   {} as AuthContextType
 );
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const toast = useToast();

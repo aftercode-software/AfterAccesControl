@@ -20,7 +20,7 @@ export default function ModalComponent({
     <Modal isVisible={isModalVisible} backdropOpacity={0.5}>
       <View className="bg-white p-6 rounded-lg">
         <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-xl font-bold font-inter">
+          <Text className="text-xl font-bold ">
             {selectedData
               ? `${selectedData.chapa} - ${selectedData.nombre}`
               : "Detalles"}
@@ -32,16 +32,16 @@ export default function ModalComponent({
 
         {selectedData ? (
           <View className="mb-6">
-            <Text className="text-lg font-inter text-gray-800 mb-2">
-              <Text className="font-bold font-inter">Destino:</Text>{" "}
+            <Text className="text-lg  text-gray-800 mb-2">
+              <Text className="font-bold ">Destino:</Text>{" "}
               {selectedData.destino}
             </Text>
-            <Text className="text-lg font-inter text-gray-800 mb-2">
-              <Text className="font-bold font-inter">Chapa y cedula:</Text>{" "}
+            <Text className="text-lg  text-gray-800 mb-2">
+              <Text className="font-bold ">Chapa y cedula:</Text>{" "}
               {selectedData.chapa} - {selectedData.cedula}
             </Text>
-            <Text className="text-lg font-inter text-gray-800 mb-2">
-              <Text className="font-bold font-inter">Ingreso:</Text>{" "}
+            <Text className="text-lg  text-gray-800 mb-2">
+              <Text className="font-bold ">Ingreso:</Text>{" "}
               {selectedData.fechaIngreso} - {selectedData.horaIngreso}
             </Text>
           </View>

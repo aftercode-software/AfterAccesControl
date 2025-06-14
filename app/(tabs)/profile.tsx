@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { useAuth } from "@/context/AuthContext";
+
 import { useToast } from "react-native-toast-notifications";
 import OverviewBox from "@/components/OverviewBox";
 import React, { useCallback, useState } from "react";
@@ -17,6 +17,7 @@ import { useFocusEffect } from "expo-router";
 import { useData } from "@/hooks/useData";
 import { Estadisticas } from "@/interfaces/interfaces";
 import { Picker } from "@react-native-picker/picker";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -66,17 +67,17 @@ export default function Profile() {
           style={{ flex: 1 }}
         >
           <View className="w-full bg-white p-6 shadow-lg pt-20 items-center flex-1">
-            <Text className="text-4xl mb-10 w-full font-bold text-left text-black font-inter">
+            <Text className="text-4xl mb-10 w-full font-bold text-left text-black ">
               Perfil <UserPen color={"#000"} />
             </Text>
 
             <View className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mb-6">
-              <Text className="text-4xl font-bold text-black font-inter">
+              <Text className="text-4xl font-bold text-black ">
                 {user?.username?.charAt(0).toUpperCase()}
               </Text>
             </View>
 
-            <Text className="text-xl font-semibold text-black mb-20 font-inter">
+            <Text className="text-xl font-semibold text-black mb-20 ">
               {user?.username}
             </Text>
 
@@ -144,7 +145,7 @@ export default function Profile() {
               className="bg-slate-600 py-3 px-8 rounded-lg mt-auto mb-10"
               style={{ position: "absolute", bottom: 10, alignSelf: "center" }}
             >
-              <Text className="text-lg font-bold text-white font-inter">
+              <Text className="text-lg font-bold text-white ">
                 Cerrar sesión
               </Text>
             </TouchableOpacity>

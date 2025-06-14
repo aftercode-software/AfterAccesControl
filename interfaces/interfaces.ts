@@ -35,3 +35,16 @@ export interface Estadisticas {
   cantidadEfectivo: number;
   cantidadBoletas: number;
 }
+
+export interface User {
+  username: string;
+  token: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  loading: boolean;
+}

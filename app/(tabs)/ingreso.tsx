@@ -16,23 +16,43 @@ import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { useToast } from "react-native-toast-notifications";
 import { Movimiento } from "@/interfaces/interfaces";
-import { AuthContext } from "@/context/AuthContext";
+
 import { getAllChapas } from "@/utilities/getChapas";
 import { router } from "expo-router";
 import CustomInput from "@/components/CustomInput";
 import CustomPicker from "@/components/CustomPicker";
 import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
-import { ArrowDown, CloudAlert, Search } from "lucide-react-native";
+import {
+  ArrowDown,
+  ChevronDownIcon,
+  CloudAlert,
+  Search,
+} from "lucide-react-native";
 import BuscadorChapa from "@/components/BuscadorChapa";
 import { paymentTypes, popularBrands, vehicleTypes } from "@/constants/ingreso";
 import { useData } from "@/hooks/useData";
+import { useAuth } from "@/hooks/useAuth";
+import SectionTitle from "@/components/SectionTitle";
+import SectionSubTitle from "@/components/SectionSubtitle";
+import {
+  Select,
+  SelectInput,
+  SelectIcon,
+  SelectTrigger,
+  SelectBackdrop,
+  SelectDragIndicator,
+  SelectDragIndicatorWrapper,
+  SelectContent,
+  SelectPortal,
+  SelectItem,
+} from "@/components/ui/select";
 
 export default function Ingreso() {
   const [chapas, setChapas] = useState<Movimiento[]>([]);
   const toast = useToast();
-  const dataContext = useData();
-  const { saveFormData, pendingData, retryPendingData } = dataContext;
-  const { user } = useContext(AuthContext) ?? {};
+  const { saveFormData, pendingData, retryPendingData } = useData();
+  const { user } = useAuth();
+
   const token = user?.token;
 
   const [formData, setFormData] = useState({
@@ -183,262 +203,244 @@ export default function Ingreso() {
   };
 
   return (
-    <GluestackUIProvider mode="light">
-      <ScrollView nestedScrollEnabled scrollEnabled={!mostrarOpciones}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className=""
-        >
-          <View className="w-full bg-white p-6 shadow-lg pt-20">
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 6,
-                justifyContent: "space-between",
-              }}
-            >
-              <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
-                Ingreso
-                <ArrowDown color="#000" />
-              </Text>
+    <ScrollView nestedScrollEnabled scrollEnabled={!mostrarOpciones}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className=""
+      >
+        <View className="w-full bg-white  shadow-lg">
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 6,
+              justifyContent: "space-between",
+            }}
+          >
+            <SectionTitle title="Ingreso" />
+          </View>
 
-              {pendingData.length > 0 && (
-                <View
-                  onTouchEnd={() => retryPendingData()}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginLeft: 8,
-                    backgroundColor: "#fdf6b2",
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 10,
-                    marginBottom: 16,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#a36b2f",
-                      fontWeight: "bold",
-                      fontSize: 16,
-                      marginRight: 4,
-                    }}
-                  >
-                    {pendingData.length}
-                  </Text>
-                  <CloudAlert color="#a36b2f" />
-                </View>
-              )}
-            </View>
+          <FormControl className="px-9 mt-10">
+            <VStack space="lg">
+              <SectionSubTitle title="Datos personales" />
+              <Select>
+                <SelectTrigger size="md">
+                  <SelectInput placeholder="Select option" />
+                  <SelectIcon className="mr-3" as={ChevronDownIcon} />
+                </SelectTrigger>
+                <SelectPortal>
+                  <SelectBackdrop />
+                  <SelectContent>
+                    <SelectDragIndicatorWrapper>
+                      <SelectDragIndicator />
+                    </SelectDragIndicatorWrapper>
+                    <SelectItem label="UX Research" value="ux" />
+                    <SelectItem label="Web Development" value="web" />
+                    <SelectItem
+                      label="Cross Platform Development Process"
+                      value="Cross Platform Development Process"
+                    />
 
-            <FormControl>
-              <VStack space="lg">
-                <HStack className="flex-1 items-start">
-                  <BuscadorChapa
-                    chapas={chapas}
-                    manejarSeleccionChapa={manejarSeleccionChapa}
-                  />
-                  <Search
-                    width={30}
-                    height={30}
-                    color={"#F64C95"}
-                    style={{ marginTop: 32, marginLeft: 5 }}
-                  />
-                </HStack>
+                    <SelectItem
+                      label="UI Designing"
+                      value="ui"
+                      isDisabled={true}
+                    />
+                    <SelectItem label="Backend Development" value="backend" />
+                  </SelectContent>
+                </SelectPortal>
+              </Select>
+              <HStack space="lg" className="w-full">
+                <CustomInput
+                  tittle="Chapa"
+                  value={formData.chapa}
+                  onChangeText={(text) => handleInputChange("chapa", text)}
+                />
+                <CustomInput
+                  tittle="Cedula"
+                  value={formData.cedula}
+                  onChangeText={(text) => handleInputChange("cedula", text)}
+                />
+              </HStack>
 
-                <HStack space="lg" className="w-full">
-                  <CustomInput
-                    tittle="Chapa"
-                    value={formData.chapa}
-                    onChangeText={(text) => handleInputChange("chapa", text)}
-                  />
-                  <CustomInput
-                    tittle="Cedula"
-                    value={formData.cedula}
-                    onChangeText={(text) => handleInputChange("cedula", text)}
-                  />
-                </HStack>
+              <VStack>
+                <CustomInput
+                  tittle="Nombre"
+                  placeholder="Nombre y apellido"
+                  value={formData.nombre}
+                  onChangeText={(text) => handleInputChange("nombre", text)}
+                />
+              </VStack>
 
-                <VStack>
-                  <CustomInput
-                    tittle="Nombre"
-                    placeholder="Nombre y apellido"
-                    value={formData.nombre}
-                    onChangeText={(text) => handleInputChange("nombre", text)}
-                  />
-                </VStack>
+              <VStack>
+                <CustomInput
+                  tittle="Destino"
+                  value={formData.destino}
+                  onChangeText={(text) => handleInputChange("destino", text)}
+                />
+              </VStack>
 
-                <VStack>
-                  <CustomInput
-                    tittle="Destino"
-                    value={formData.destino}
-                    onChangeText={(text) => handleInputChange("destino", text)}
-                  />
-                </VStack>
+              <HStack space="lg" className="w-full">
+                <CustomPicker
+                  arrayOpciones={vehicleTypes}
+                  tittle="Vehiculo"
+                  value={formData.vehiculo}
+                  onChangeText={(text) => handleInputChange("vehiculo", text)}
+                />
+                <CustomPicker
+                  arrayOpciones={popularBrands}
+                  tittle="Marca"
+                  value={formData.marca}
+                  onChangeText={(text) => handleInputChange("marca", text)}
+                />
+              </HStack>
 
-                <HStack space="lg" className="w-full">
-                  <CustomPicker
-                    arrayOpciones={vehicleTypes}
-                    tittle="Vehiculo"
-                    value={formData.vehiculo}
-                    onChangeText={(text) => handleInputChange("vehiculo", text)}
-                  />
-                  <CustomPicker
-                    arrayOpciones={popularBrands}
-                    tittle="Marca"
-                    value={formData.marca}
-                    onChangeText={(text) => handleInputChange("marca", text)}
-                  />
-                </HStack>
-
-                <HStack space="lg">
-                  <VStack className="flex-[0.5]">
-                    <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                      Forma pago
-                    </Text>
-                    <View
-                      style={{
-                        borderRadius: 10,
-                        borderWidth: 1.5,
-                        borderColor: "#ccc",
-                        height: 50,
-                        overflow: "hidden",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Picker
-                        selectedValue={formData.pago}
-                        onValueChange={(value) => {
-                          const resetData: Partial<typeof formData> = {
-                            pago: value,
-                          };
-
-                          if (value !== "Efectivo") {
-                            resetData.monto = 0;
-                          }
-
-                          if (value !== "Boleta") {
-                            resetData.boleta = "";
-                          }
-
-                          setFormData({ ...formData, ...resetData });
-                        }}
-                        style={{
-                          width: "100%",
-                          color: "#333",
-                          fontSize: 14,
-                        }}
-                        itemStyle={{
-                          fontSize: 14,
-                        }}
-                      >
-                        <Picker.Item
-                          label={"Seleccione una opción"}
-                          value=""
-                          style={{ color: "#F64C95" }}
-                        />
-                        {paymentTypes.map((type) => (
-                          <Picker.Item
-                            key={type}
-                            label={type.charAt(0).toUpperCase() + type.slice(1)}
-                            value={type}
-                          />
-                        ))}
-                      </Picker>
-                    </View>
-                  </VStack>
-
-                  {shouldShowMonto && (
-                    <VStack className="flex-[0.5] space-y-1">
-                      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                        Monto
-                      </Text>
-                      <View className="w-full h-14">
-                        <TextInput
-                          keyboardType="numeric"
-                          placeholder="Ingresa el monto"
-                          value={String(formData.monto)}
-                          onChangeText={(text) =>
-                            setFormData({
-                              ...formData,
-                              monto: Number(text),
-                            })
-                          }
-                          style={{
-                            borderRadius: 10,
-                            borderWidth: 1.5,
-                            borderColor: "#ccc",
-                            paddingHorizontal: 16,
-                            height: "100%",
-                            fontSize: 14,
-                            color: "#333",
-                          }}
-                          className="w-full h-full"
-                        />
-                      </View>
-                    </VStack>
-                  )}
-
-                  {shouldShowBoleta && (
-                    <VStack className="flex-[0.5]">
-                      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                        Boleta
-                      </Text>
-                      <View className="w-full h-14">
-                        <TextInput
-                          value={formData.boleta}
-                          onChangeText={(text) =>
-                            setFormData({ ...formData, boleta: text })
-                          }
-                          style={{
-                            borderRadius: 10,
-                            borderWidth: 1.5,
-                            borderColor: "#ccc",
-                          }}
-                          className="w-full h-14 px-4 text-base"
-                        />
-                      </View>
-                    </VStack>
-                  )}
-                </HStack>
-
-                <VStack>
-                  <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                    Observaciones
+              <HStack space="lg">
+                <VStack className="flex-[0.5]">
+                  <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
+                    Forma pago
                   </Text>
                   <View
-                    className="w-full h-28 bg-gray-100 rounded-md border-gray-100 "
                     style={{
                       borderRadius: 10,
                       borderWidth: 1.5,
                       borderColor: "#ccc",
+                      height: 50,
+                      overflow: "hidden",
+                      justifyContent: "center",
                     }}
                   >
-                    <TextInput
-                      value={formData.observaciones}
-                      onChangeText={(text) =>
-                        setFormData({ ...formData, observaciones: text })
-                      }
-                      multiline
-                      className="w-full px-4 text-base"
-                    />
+                    <Picker
+                      selectedValue={formData.pago}
+                      onValueChange={(value) => {
+                        const resetData: Partial<typeof formData> = {
+                          pago: value,
+                        };
+
+                        if (value !== "Efectivo") {
+                          resetData.monto = 0;
+                        }
+
+                        if (value !== "Boleta") {
+                          resetData.boleta = "";
+                        }
+
+                        setFormData({ ...formData, ...resetData });
+                      }}
+                      style={{
+                        width: "100%",
+                        color: "#333",
+                        fontSize: 14,
+                      }}
+                      itemStyle={{
+                        fontSize: 14,
+                      }}
+                    >
+                      <Picker.Item
+                        label={"Seleccione una opción"}
+                        value=""
+                        style={{ color: "#F64C95" }}
+                      />
+                      {paymentTypes.map((type) => (
+                        <Picker.Item
+                          key={type}
+                          label={type.charAt(0).toUpperCase() + type.slice(1)}
+                          value={type}
+                        />
+                      ))}
+                    </Picker>
                   </View>
                 </VStack>
 
-                <Button
-                  onPress={handleSubmit}
-                  className="w-full h-14 bg-[#F64C95] rounded-lg mt-2 active:bg-[#D83E7F]"
+                {shouldShowMonto && (
+                  <VStack className="flex-[0.5] space-y-1">
+                    <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
+                      Monto
+                    </Text>
+                    <View className="w-full h-14">
+                      <TextInput
+                        keyboardType="numeric"
+                        placeholder="Ingresa el monto"
+                        value={String(formData.monto)}
+                        onChangeText={(text) =>
+                          setFormData({
+                            ...formData,
+                            monto: Number(text),
+                          })
+                        }
+                        style={{
+                          borderRadius: 10,
+                          borderWidth: 1.5,
+                          borderColor: "#ccc",
+                          paddingHorizontal: 16,
+                          height: "100%",
+                          fontSize: 14,
+                          color: "#333",
+                        }}
+                        className="w-full h-full"
+                      />
+                    </View>
+                  </VStack>
+                )}
+
+                {shouldShowBoleta && (
+                  <VStack className="flex-[0.5]">
+                    <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
+                      Boleta
+                    </Text>
+                    <View className="w-full h-14">
+                      <TextInput
+                        value={formData.boleta}
+                        onChangeText={(text) =>
+                          setFormData({ ...formData, boleta: text })
+                        }
+                        style={{
+                          borderRadius: 10,
+                          borderWidth: 1.5,
+                          borderColor: "#ccc",
+                        }}
+                        className="w-full h-14 px-4 text-base"
+                      />
+                    </View>
+                  </VStack>
+                )}
+              </HStack>
+
+              <VStack>
+                <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
+                  Observaciones
+                </Text>
+                <View
+                  className="w-full h-28 bg-gray-100 rounded-md border-gray-100 "
+                  style={{
+                    borderRadius: 10,
+                    borderWidth: 1.5,
+                    borderColor: "#ccc",
+                  }}
                 >
-                  <ButtonText className="text-white text-lg font-bold">
-                    Ingresar
-                  </ButtonText>
-                </Button>
+                  <TextInput
+                    value={formData.observaciones}
+                    onChangeText={(text) =>
+                      setFormData({ ...formData, observaciones: text })
+                    }
+                    multiline
+                    className="w-full px-4 text-base"
+                  />
+                </View>
               </VStack>
-            </FormControl>
-          </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
-    </GluestackUIProvider>
+
+              <Button
+                onPress={handleSubmit}
+                className="w-full h-14 bg-[#F64C95] rounded-lg mt-2 active:bg-[#D83E7F]"
+              >
+                <ButtonText className="text-white text-lg font-bold">
+                  Ingresar
+                </ButtonText>
+              </Button>
+            </VStack>
+          </FormControl>
+        </View>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 }

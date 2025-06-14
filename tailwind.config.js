@@ -10,7 +10,17 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        inter: ["Inter_400Regular", "sans-serif"],
+        poppins: [
+          "Poppins_100Thin",
+          "Poppins_200ExtraLight",
+          "Poppins_300Light",
+          "Poppins_400Regular",
+          "Poppins_500Medium",
+          "Poppins_600SemiBold",
+          "Poppins_700Bold",
+          "Poppins_800ExtraBold",
+          "Poppins_900Black",
+        ],
       },
       colors: {
         primary: "#F64C95",

@@ -100,11 +100,11 @@ export default function Salida() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View className="w-full bg-white p-6  pt-20">
-            <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
+            <Text className="text-4xl mb-6 font-bold text-left text-black ">
               Salida <ArrowUp color={"#000"} />
             </Text>
             {data.length === 0 && (
-              <Text className="text-lg font-semibold text-center mt-96 text-black font-inter">
+              <Text className="text-lg font-semibold text-center mt-96 text-black ">
                 No hay vehículos para marcar salida
               </Text>
             )}
@@ -117,7 +117,7 @@ export default function Salida() {
                 <View className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-3">
                   {getVehicleIcon(item.vehiculo)}
                 </View>
-                <Text className="text-lg font-semibold font-inter">
+                <Text className="text-lg font-semibold ">
                   {item.chapa} - {item.nombre}
                 </Text>
               </TouchableOpacity>

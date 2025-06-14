@@ -14,7 +14,14 @@ export default function CustomInput({
 }) {
   return (
     <VStack className="flex-[1.4] space-y-1">
-      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
+      <Text
+        className="text-xl px-1 pb-1 text-gray-800"
+        style={{
+          fontFamily: "Poppins_400Regular",
+          fontSize: 16,
+          paddingVertical: 8,
+        }}
+      >
         {tittle}
       </Text>
       <View>

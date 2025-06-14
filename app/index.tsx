@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { View, Animated } from "react-native";
 import { router } from "expo-router";
-import { useAuth } from "@/context/AuthContext";
+
 import "global.css";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
   const { user, loading } = useAuth();
@@ -42,22 +44,24 @@ export default function Index() {
   });
 
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#fff",
-      }}
-    >
-      <Animated.Image
-        source={require("/assets/logo2.png")}
+    <GluestackUIProvider mode="light">
+      <View
         style={{
-          width: 200,
-          height: 220,
-          transform: [{ rotate: rotateInterpolate }],
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
         }}
-      />
-    </View>
+      >
+        <Animated.Image
+          source={require("/assets/logo2.png")}
+          style={{
+            width: 200,
+            height: 220,
+            transform: [{ rotate: rotateInterpolate }],
+          }}
+        />
+      </View>
+    </GluestackUIProvider>
   );
 }

@@ -1,18 +1,22 @@
-import { ArrowDown, ArrowUp, UserPen } from "lucide-react-native";
+import {
+  ArrowBigDownDash,
+  ArrowBigUpDash,
+  UsersRound,
+} from "lucide-react-native";
 
-const width = 24;
-const height = 24;
+const width = 26;
+const height = 26;
 
 const IncomeIcon = ({ color }: { color: string }) => (
-  <ArrowDown width={width} height={height} color={color} />
+  <ArrowBigDownDash width={width} height={height} color={color} />
 );
 
 const EgressIcon = ({ color }: { color: string }) => (
-  <ArrowUp width={width} height={height} color={color} />
+  <ArrowBigUpDash width={width} height={height} color={color} />
 );
 
 const ConfigIcon = ({ color }: { color: string }) => (
-  <UserPen width={width} height={height} color={color} />
+  <UsersRound width={width} height={height} color={color} />
 );
 export default {
   IncomeIcon,
