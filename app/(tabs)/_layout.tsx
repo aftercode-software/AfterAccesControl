@@ -17,7 +17,7 @@ const TabsLayout = () => {
         },
         tabBarActiveTintColor: "#000",
         tabBarInactiveTintColor: "#BDBDBD",
-        tabBarHideOnKeyboard: true,
+        tabBarHideOnKeyboard: false,
         tabBarStyle: {
           height: 65,
           backgroundColor: "#fff",

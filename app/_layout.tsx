@@ -2,11 +2,8 @@ import React, { useEffect } from "react";
 import { Slot } from "expo-router";
 import { AuthProvider } from "../context/AuthContext";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { ToastProvider } from "react-native-toast-notifications";
 import { DataProvider } from "@/context/DataContext";
 import * as SplashScreen from "expo-splash-screen";
-import { RootSiblingParent } from "react-native-root-siblings";
-import ToastManager from "toastify-react-native";
 import {
   useFonts,
   Inter_100Thin,
@@ -47,17 +44,14 @@ export default function Layout() {
   }
 
   return (
-    <RootSiblingParent>
-      <SafeAreaView style={{ flex: 1 }}>
-        <ToastManager />
-        <AuthProvider>
-          <DataProvider>
-            <GluestackUIProvider mode="light">
-              <Slot />
-            </GluestackUIProvider>
-          </DataProvider>
-        </AuthProvider>
-      </SafeAreaView>
-    </RootSiblingParent>
+    <SafeAreaView style={{ flex: 1 }}>
+      <AuthProvider>
+        <DataProvider>
+          <GluestackUIProvider mode="light">
+            <Slot />
+          </GluestackUIProvider>
+        </DataProvider>
+      </AuthProvider>
+    </SafeAreaView>
   );
 }

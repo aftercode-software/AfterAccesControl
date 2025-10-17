@@ -16,13 +16,14 @@ import {
 } from "@/interfaces/interfaces";
 import { AuthContext } from "./AuthContext";
 import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
-import { Toast } from "toastify-react-native";
+import { toast } from "@/utilities/nativeToast";
 
 type SyncAction = "CREATE" | "UPDATE_SALIDA";
+let isSyncing = false;
 
 type OpenMovimiento = Movimiento & {
-  localId: string; // ID local siempre presente
-  id?: number; // ID del servidor cuando esté disponible
+  localId: string;
+  id?: number;
 };
 
 type OutboxItem =
@@ -69,7 +70,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useContext(AuthContext) ?? {};
   const token = user?.token;
 
-  // --- API base ---
   const api = axios.create({
     baseURL: "https://backend-afteraccess.vercel.app",
     headers: {
@@ -79,7 +79,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     timeout: 15000,
   });
 
-  // --- Helpers de red y storage ---
   const isOnline = async () => {
     try {
       const s = await NetInfo.fetch();
@@ -116,78 +115,78 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     await AsyncStorage.setItem(STORAGE_KEYS.IDMAP, JSON.stringify(map));
   };
 
-  // --- Procesador de OUTBOX (CREATES -> UPDATES) ---
   const tryProcessOutbox = async () => {
-    if (!(await isOnline())) return;
-    if (!token) return;
+    if (isSyncing) return;
+    isSyncing = true;
+    try {
+      if (!(await isOnline())) return;
+      if (!token) return;
 
-    let queue: OutboxItem[] = JSON.parse(
-      (await AsyncStorage.getItem(STORAGE_KEYS.OUTBOX)) || "[]",
-    );
-    if (queue.length === 0) return;
+      let queue: OutboxItem[] = JSON.parse(
+        (await AsyncStorage.getItem(STORAGE_KEYS.OUTBOX)) || "[]",
+      );
+      if (queue.length === 0) return;
 
-    const idMap = await readIdMap();
-    const newIdMap = { ...idMap };
+      const idMap = await readIdMap();
+      const newIdMap = { ...idMap };
 
-    // 1) Procesar CREATES
-    const creates = queue.filter((i) => i.action === "CREATE");
-    for (const item of creates.sort((a, b) => a.timestamp - b.timestamp)) {
-      try {
-        const res = await api.post("/movimiento", item.payload);
-        if (res?.status === 200 && res.data?.id) {
-          const serverId = res.data.id as number;
-          newIdMap[item.localId] = serverId;
+      const creates = queue
+        .filter((i) => i.action === "CREATE")
+        .sort((a, b) => a.timestamp - b.timestamp);
+      for (const item of creates) {
+        try {
+          const res = await api.post("/movimiento", item.payload);
+          if (res?.status === 200 && res.data?.id) {
+            const serverId = res.data.id as number;
+            newIdMap[item.localId] = serverId;
 
-          // Actualizar abiertos con serverId
-          const open: OpenMovimiento[] = JSON.parse(
-            (await AsyncStorage.getItem(STORAGE_KEYS.OPEN)) || "[]",
-          );
-          const updated = open.map((m) =>
-            m.localId === item.localId ? { ...m, id: serverId } : m,
-          );
-          await persistOpen(updated);
+            const open: OpenMovimiento[] = JSON.parse(
+              (await AsyncStorage.getItem(STORAGE_KEYS.OPEN)) || "[]",
+            );
+            const updated = open.map((m) =>
+              m.localId === item.localId ? { ...m, id: serverId } : m,
+            );
+            await persistOpen(updated);
 
-          // Remover item del outbox
-          queue = queue.filter((q) => q.id !== item.id);
-        } else {
-          throw new Error("Respuesta inválida en CREATE");
+            queue = queue.filter((q) => q.id !== item.id);
+          } else {
+            throw new Error("Respuesta inválida en CREATE");
+          }
+        } catch (e) {
+          console.log("Fallo CREATE, se reintentará", e);
         }
-      } catch (e) {
-        // Dejar en cola para reintentar
-        console.log("Fallo CREATE, se reintentará", e);
       }
-    }
-    await writeIdMap(newIdMap);
+      await writeIdMap(newIdMap);
 
-    // 2) Procesar UPDATE_SALIDA
-    const updates = queue.filter((i) => i.action === "UPDATE_SALIDA");
-    for (const item of updates.sort((a, b) => a.timestamp - b.timestamp)) {
-      const serverId =
-        item.serverId || newIdMap[item.localId] || idMap[item.localId];
-      if (!serverId) {
-        // aún no conocemos el serverId (depende de un CREATE previo)
-        continue;
-      }
-      try {
-        const res = await api.put("/movimiento", {
-          id: serverId,
-          ...item.payload,
-        });
-        if (res?.status === 200) {
-          // Remover item del outbox
-          queue = queue.filter((q) => q.id !== item.id);
-        } else {
-          throw new Error("Respuesta inválida en UPDATE_SALIDA");
+      const updates = queue
+        .filter((i) => i.action === "UPDATE_SALIDA")
+        .sort((a, b) => a.timestamp - b.timestamp);
+      for (const item of updates) {
+        const serverId =
+          item.serverId || newIdMap[item.localId] || idMap[item.localId];
+        if (!serverId) continue;
+
+        try {
+          const res = await api.put("/movimiento", {
+            id: serverId,
+            ...item.payload,
+          });
+          if (res?.status === 200) {
+            queue = queue.filter((q) => q.id !== item.id);
+          } else {
+            throw new Error("Respuesta inválida en UPDATE_SALIDA");
+          }
+        } catch (e) {
+          console.log("Fallo UPDATE_SALIDA, se reintentará", e);
         }
-      } catch (e) {
-        console.log("Fallo UPDATE_SALIDA, se reintentará", e);
       }
-    }
 
-    await persistOutbox(queue);
+      await persistOutbox(queue);
+    } finally {
+      isSyncing = false;
+    }
   };
 
-  // --- Efectos: carga inicial + listeners ---
   useEffect(() => {
     (async () => {
       await loadAll();
@@ -205,20 +204,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       unsubNet();
       clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // --- API público: offline-first ---
-
-  // Ingreso
   const saveFormData = async (mov: Movimiento) => {
     const localId = uuid();
 
-    // Optimista: guardar como abierto
     const newOpen: OpenMovimiento = { ...mov, localId };
     await persistOpen([newOpen, ...openMovimientos]);
 
-    // Intento online directo
     if (await isOnline()) {
       try {
         const res = await api.post("/movimiento", mov);
@@ -237,16 +230,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           );
           await persistOpen(merged);
 
-          Toast.success("Ingreso enviado");
+          toast.success("Ingreso enviado");
           return;
         }
         throw new Error("Respuesta inválida");
-      } catch {
-        // cae a outbox
-      }
+      } catch {}
     }
 
-    // Encolar CREATE
     const item: OutboxItem = {
       id: uuid(),
       action: "CREATE",
@@ -256,10 +246,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       retries: 0,
     };
     await persistOutbox([item, ...outbox]);
-    Toast.warn("Sin conexión. Ingreso guardado localmente");
+    toast.warn("Sin conexión. Ingreso guardado localmente");
   };
 
-  // Salida (acepta serverId o localId)
   const marcarSalida = async (idOrLocalId: number | string): Promise<void> => {
     try {
       const { currentDate, currentTime } = getCurrentDateTimeInParaguay();
@@ -267,15 +256,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       const localId =
         typeof idOrLocalId === "string"
           ? idOrLocalId
-          : // si vino serverId, buscamos su localId
-            (openMovimientos.find((m) => m.id === idOrLocalId)?.localId ??
+          : (openMovimientos.find((m) => m.id === idOrLocalId)?.localId ??
             String(idOrLocalId));
 
-      // Optimista: remover de abiertos
       const remaining = openMovimientos.filter((m) => m.localId !== localId);
       await persistOpen(remaining);
 
-      // Resolver serverId si está disponible
       const idMap = await readIdMap();
       const serverId =
         typeof idOrLocalId === "number"
@@ -283,7 +269,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           : openMovimientos.find((m) => m.localId === localId)?.id ||
             idMap[localId];
 
-      // Intento online si tengo serverId y hay red
       if ((await isOnline()) && serverId) {
         try {
           const res = await api.put("/movimiento", {
@@ -292,15 +277,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
             horaSalida: currentTime,
           });
           if (res?.status === 200) {
-            Toast.success("Salida enviada");
+            toast.success("Salida enviada");
             return;
           }
-        } catch {
-          // si falla, encola abajo
-        }
+        } catch {}
       }
 
-      // Encolar UPDATE_SALIDA
       const item: OutboxItem = {
         id: uuid(),
         action: "UPDATE_SALIDA",
@@ -311,14 +293,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         retries: 0,
       };
       await persistOutbox([item, ...outbox]);
-      Toast.warn("Sin conexión. Salida guardada para sincronizar");
+      toast.warn("Sin conexión. Salida guardada para sincronizar");
     } catch (error) {
       console.error("Error al marcar salida:", error);
-      Toast.error("Error al marcar salida");
+      toast.error("Error al marcar salida");
     }
   };
 
-  // Devuelve los “abiertos” conocidos por el server (tienen id)
   const getSentData = async (): Promise<MovimientoServer[]> => {
     const open = await AsyncStorage.getItem(STORAGE_KEYS.OPEN);
     const list: OpenMovimiento[] = open ? JSON.parse(open) : [];
@@ -341,14 +322,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       return res as Estadisticas;
     } catch (error) {
       console.error("Error al obtener estadísticas:", error);
-      Toast.error("Error al obtener estadísticas");
+      toast.error("Error al obtener estadísticas");
     }
   };
 
   return (
     <DataContext.Provider
       value={{
-        // Exponemos abiertos como "pendingData" para mantener compat
         pendingData: openMovimientos as unknown as any[],
         saveFormData,
         getSentData,

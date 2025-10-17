@@ -2,7 +2,9 @@
   "expo": {
     "name": "AfterAccessControl",
     "slug": "AfterAccessControl",
-    "scheme": ["afteraccesscontrol"],
+    "scheme": [
+      "afteraccesscontrol"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
@@ -27,14 +29,19 @@
     "web": {
       "favicon": "./assets/logo.png"
     },
-    "plugins": ["expo-router", "expo-secure-store", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "87d3c623-d648-4dbf-aeb7-aaf1417dd788"
+        "projectId": "5ad57e26-e453-4048-b1ae-e071eb59de56"
       }
-    }
+    },
+    "owner": "geer68"
   }
 }

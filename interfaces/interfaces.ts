@@ -2,7 +2,7 @@ export interface DataContextProps {
   pendingData: Movimiento[];
   saveFormData: (data: Movimiento) => Promise<void>;
   getSentData: () => Promise<MovimientoServer[]>;
-  marcarSalida: (id: number) => Promise<void>;
+  marcarSalida: (idOrLocalId: number | string) => Promise<void>;
   updateSentData: () => Promise<void>;
   getEstadisticas: (opcion: "mensuales" | "hoy") => Promise<Estadisticas>;
   retryPendingData: () => Promise<void>;
