@@ -1,8 +1,8 @@
-import { View } from "react-native";
-import React from "react";
-import { Tabs } from "expo-router";
-import icons from "@/constants/icons";
 import TabIcon from "@/components/TabIcon";
+import { Tabs } from "expo-router";
+import { ArrowBigDown, ArrowBigUp, UserRound } from "lucide-react-native";
+import React from "react";
+import { View } from "react-native";
 
 const TabsLayout = () => {
   return (
@@ -15,7 +15,7 @@ const TabsLayout = () => {
           marginBottom: 0,
           fontFamily: "Inter_500Medium",
         },
-        tabBarActiveTintColor: "#F64C95",
+        tabBarActiveTintColor: "#000",
         tabBarInactiveTintColor: "#BDBDBD",
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
@@ -49,7 +49,7 @@ const TabsLayout = () => {
               }}
             >
               <TabIcon
-                IconComponent={icons.IncomeIcon}
+                IconComponent={ArrowBigDown}
                 color={color}
                 name="Ingreso"
                 focused={focused}
@@ -66,7 +66,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              IconComponent={icons.EgressIcon}
+              IconComponent={ArrowBigUp}
               color={color}
               name="Salida"
               focused={focused}
@@ -81,7 +81,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              IconComponent={icons.ConfigIcon}
+              IconComponent={UserRound}
               color={color}
               name="Perfil"
               focused={focused}

@@ -27,19 +27,20 @@ export const popularBrands = [
 ];
 
 export const vehicleTypes = [
-  "transganado",
+  "2 ejes",
+  "auto",
+  "bicicleta",
   "camion",
   "camioneta",
-  "grua",
-  "tractor pesado",
-  "2 ejes",
-  "tractor liviano",
   "camioneta cabina simple",
   "camioneta doble",
-  "suv",
-  "auto",
+  "grua",
   "moto",
-  "bicicleta",
   "otro",
+  "suv",
+  "tractor liviano",
+  "tractor pesado",
+  "transganado",
 ];
+
 export const paymentTypes = ["efectivo", "boleta", "falta pagar"];

@@ -23,7 +23,7 @@ interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType>(
-  {} as AuthContextType
+  {} as AuthContextType,
 );
 
 export const useAuth = (): AuthContextType => {
@@ -41,12 +41,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (
     username: string,
-    password: string
+    password: string,
   ): Promise<boolean> => {
     try {
       const response = await axios.post(
         "https://backend-afteraccess.vercel.app/login",
-        { username, password }
+        { username, password },
       );
 
       const { token } = response.data;
@@ -55,9 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await SecureStore.setItemAsync("username", username);
       setUser({ username, token });
       return true;
-    } catch (error) {
-      console.error("Error during login:", error);
-      throw new Error("Usuario o contraseña incorrectos");
+    } catch (err: unknown) {
+      const msg =
+        (axios.isAxiosError(err) &&
+          (err.response?.data?.message || err.response?.data?.error)) ||
+        "Usuario o contraseña incorrectos";
+
+      console.warn("Login failed:", msg);
+      throw new Error(msg);
     }
   };
 

@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,33 +9,23 @@ import {
   Platform,
   ScrollView,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { Button, ButtonText } from "@/components/ui/button";
 import { FormControl } from "@/components/ui/form-control";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
-import { useToast } from "react-native-toast-notifications";
-import { Movimiento } from "@/interfaces/interfaces";
-import { AuthContext } from "@/context/AuthContext";
-import { getAllChapas } from "@/utilities/getChapas";
-import { router } from "expo-router";
-import CustomInput from "@/components/CustomInput";
-import CustomPicker from "@/components/CustomPicker";
+import { Toast } from "toastify-react-native";
+import type { Movimiento } from "@/interfaces/interfaces";
 import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
-import { ArrowDown, CloudAlert, Search } from "lucide-react-native";
-import BuscadorChapa from "@/components/BuscadorChapa";
+import { ArrowRight, CloudAlert } from "lucide-react-native";
 import { paymentTypes, popularBrands, vehicleTypes } from "@/constants/ingreso";
 import { useData } from "@/hooks/useData";
 
 export default function Ingreso() {
-  const [chapas, setChapas] = useState<Movimiento[]>([]);
-  const toast = useToast();
   const dataContext = useData();
   const { saveFormData, pendingData, retryPendingData } = dataContext;
-  const { user } = useContext(AuthContext) ?? {};
-  const token = user?.token;
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -50,33 +42,7 @@ export default function Ingreso() {
     observaciones: "",
   });
 
-  const [mostrarOpciones, setMostrarOpciones] = useState(false);
-
   const { currentDate, currentTime } = getCurrentDateTimeInParaguay();
-
-  useEffect(() => {
-    const obtenerChapas = async () => {
-      if (!token) {
-        router.replace("/login");
-        return;
-      }
-
-      try {
-        const chapas = await getAllChapas(token);
-        if (chapas) {
-          setChapas(chapas);
-        }
-      } catch (error: any) {
-        toast.show("No se pudieron cargar las chapas", {
-          type: "danger",
-          placement: "top",
-        });
-        console.error("Error al obtener chapas:", error);
-      }
-    };
-
-    obtenerChapas();
-  }, [token]);
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({
@@ -116,23 +82,14 @@ export default function Ingreso() {
 
         if (campo === "monto") {
           if (typeof valor !== "number" || valor <= 0) {
-            toast.show(
-              `El campo ${campo} es obligatorio y debe ser mayor a 0`,
-              {
-                type: "danger",
-                placement: "top",
-              }
-            );
+            Toast.warn(`El campo ${campo} es obligatorio y debe ser mayor a 0`);
             return;
           }
           continue;
         }
 
         if (typeof valor !== "string" || valor.trim() === "") {
-          toast.show(`El campo ${campo} es obligatorio`, {
-            type: "danger",
-            placement: "top",
-          });
+          Toast.error(`El campo ${campo} es obligatorio`);
           return;
         }
       }
@@ -165,199 +122,274 @@ export default function Ingreso() {
     }
   };
 
-  const manejarSeleccionChapa = (valor: string) => {
-    const chapaSeleccionada = chapas.find((item) => item.chapa === valor);
-    if (chapaSeleccionada) {
-      setFormData({
-        ...formData,
-        chapa: chapaSeleccionada.chapa,
-        nombre: chapaSeleccionada.nombre,
-        cedula: chapaSeleccionada.cedula,
-        marca: chapaSeleccionada.marca,
-        vehiculo: chapaSeleccionada.vehiculo,
-        destino: formData.destino,
-      });
-    }
-
-    setMostrarOpciones(false);
+  const handleCancel = () => {
+    setFormData({
+      nombre: "",
+      horaIngreso: "",
+      cedula: "",
+      marca: "",
+      vehiculo: "",
+      chapa: "",
+      destino: "",
+      fechaIngreso: "",
+      monto: 0,
+      pago: "",
+      boleta: "",
+      observaciones: "",
+    });
   };
 
   return (
     <GluestackUIProvider mode="light">
-      <ScrollView nestedScrollEnabled scrollEnabled={!mostrarOpciones}>
+      <ScrollView nestedScrollEnabled scrollEnabled>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className=""
         >
-          <View className="w-full bg-white p-6 shadow-lg pt-20">
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 6,
-                justifyContent: "space-between",
-              }}
-            >
-              <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
-                Ingreso
-                <ArrowDown color="#000" />
-              </Text>
-
+          <View className="w-full bg-white px-6 pt-6 pb-6">
+            <View className="flex-row items-center justify-between mb-6">
               {pendingData.length > 0 && (
-                <View
-                  onTouchEnd={() => retryPendingData()}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginLeft: 8,
-                    backgroundColor: "#fdf6b2",
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 10,
-                    marginBottom: 16,
-                  }}
+                <TouchableOpacity
+                  onPress={() => retryPendingData()}
+                  className="flex-row items-center bg-yellow-50 px-3 py-2 rounded-lg"
                 >
-                  <Text
-                    style={{
-                      color: "#a36b2f",
-                      fontWeight: "bold",
-                      fontSize: 16,
-                      marginRight: 4,
-                    }}
-                  >
+                  <Text className="text-yellow-700 font-bold text-base mr-1">
                     {pendingData.length}
                   </Text>
-                  <CloudAlert color="#a36b2f" />
-                </View>
+                  <CloudAlert color="#a36b2f" size={20} />
+                </TouchableOpacity>
               )}
             </View>
 
+            <View className="flex-row items-center mb-2">
+              <Text className="text-4xl font-bold text-black">Ingreso</Text>
+            </View>
+          </View>
+
+          <View className="w-full bg-white px-6 pb-6">
             <FormControl>
-              <VStack space="lg">
-                <HStack className="flex-1 items-start">
-                  <BuscadorChapa
-                    chapas={chapas}
-                    manejarSeleccionChapa={manejarSeleccionChapa}
-                  />
-                  <Search
-                    width={30}
-                    height={30}
-                    color={"#F64C95"}
-                    style={{ marginTop: 32, marginLeft: 5 }}
-                  />
-                </HStack>
+              <VStack space="xl">
+                <VStack space="md">
+                  <Text className="text-base font-semibold text-black mb-2">
+                    Datos personales
+                  </Text>
 
-                <HStack space="lg" className="w-full">
-                  <CustomInput
-                    tittle="Chapa"
-                    value={formData.chapa}
-                    onChangeText={(text) => handleInputChange("chapa", text)}
-                  />
-                  <CustomInput
-                    tittle="Cedula"
-                    value={formData.cedula}
-                    onChangeText={(text) => handleInputChange("cedula", text)}
-                  />
-                </HStack>
-
-                <VStack>
-                  <CustomInput
-                    tittle="Nombre"
-                    placeholder="Nombre y apellido"
-                    value={formData.nombre}
-                    onChangeText={(text) => handleInputChange("nombre", text)}
-                  />
-                </VStack>
-
-                <VStack>
-                  <CustomInput
-                    tittle="Destino"
-                    value={formData.destino}
-                    onChangeText={(text) => handleInputChange("destino", text)}
-                  />
-                </VStack>
-
-                <HStack space="lg" className="w-full">
-                  <CustomPicker
-                    arrayOpciones={vehicleTypes}
-                    tittle="Vehiculo"
-                    value={formData.vehiculo}
-                    onChangeText={(text) => handleInputChange("vehiculo", text)}
-                  />
-                  <CustomPicker
-                    arrayOpciones={popularBrands}
-                    tittle="Marca"
-                    value={formData.marca}
-                    onChangeText={(text) => handleInputChange("marca", text)}
-                  />
-                </HStack>
-
-                <HStack space="lg">
-                  <VStack className="flex-[0.5]">
-                    <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                      Forma pago
-                    </Text>
-                    <View
-                      style={{
-                        borderRadius: 10,
-                        borderWidth: 1.5,
-                        borderColor: "#ccc",
-                        height: 50,
-                        overflow: "hidden",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Picker
-                        selectedValue={formData.pago}
-                        onValueChange={(value) => {
-                          const resetData: Partial<typeof formData> = {
-                            pago: value,
-                          };
-
-                          if (value !== "Efectivo") {
-                            resetData.monto = 0;
-                          }
-
-                          if (value !== "Boleta") {
-                            resetData.boleta = "";
-                          }
-
-                          setFormData({ ...formData, ...resetData });
-                        }}
+                  <HStack space="md" className="w-full">
+                    <VStack className="flex-1">
+                      <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                        Chapa
+                      </Text>
+                      <TextInput
+                        placeholder="ABC 1234"
+                        value={formData.chapa}
+                        onChangeText={(text) =>
+                          handleInputChange("chapa", text)
+                        }
                         style={{
-                          width: "100%",
-                          color: "#333",
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "#d1d5db",
+                          paddingHorizontal: 16,
+                          height: 48,
                           fontSize: 14,
+                          color: "#374151",
+                          backgroundColor: "#fff",
                         }}
-                        itemStyle={{
+                      />
+                    </VStack>
+
+                    <VStack className="flex-1">
+                      <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                        Cedula
+                      </Text>
+                      <TextInput
+                        placeholder="9845751676"
+                        value={formData.cedula}
+                        onChangeText={(text) =>
+                          handleInputChange("cedula", text)
+                        }
+                        keyboardType="numeric"
+                        style={{
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "#d1d5db",
+                          paddingHorizontal: 16,
+                          height: 48,
                           fontSize: 14,
+                          color: "#374151",
+                          backgroundColor: "#fff",
+                        }}
+                      />
+                    </VStack>
+                  </HStack>
+
+                  <VStack>
+                    <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                      Nombre
+                    </Text>
+                    <TextInput
+                      placeholder="Juan Gonzalez"
+                      value={formData.nombre}
+                      onChangeText={(text) => handleInputChange("nombre", text)}
+                      style={{
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: "#d1d5db",
+                        paddingHorizontal: 16,
+                        height: 48,
+                        fontSize: 14,
+                        color: "#374151",
+                        backgroundColor: "#fff",
+                      }}
+                    />
+                  </VStack>
+                </VStack>
+
+                <VStack space="md">
+                  <Text className="text-base font-semibold text-black mb-2">
+                    Datos vehículo
+                  </Text>
+
+                  <HStack space="md" className="w-full">
+                    <VStack className="flex-1">
+                      <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                        Vehiculo
+                      </Text>
+                      <View
+                        style={{
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "#d1d5db",
+                          height: 48,
+                          overflow: "hidden",
+                          justifyContent: "center",
+                          backgroundColor: "#fff",
                         }}
                       >
-                        <Picker.Item
-                          label={"Seleccione una opción"}
-                          value=""
-                          style={{ color: "#F64C95" }}
-                        />
-                        {paymentTypes.map((type) => (
-                          <Picker.Item
-                            key={type}
-                            label={type.charAt(0).toUpperCase() + type.slice(1)}
-                            value={type}
-                          />
-                        ))}
-                      </Picker>
-                    </View>
-                  </VStack>
+                        <Picker
+                          selectedValue={formData.vehiculo}
+                          onValueChange={(value) =>
+                            handleInputChange("vehiculo", value)
+                          }
+                          style={{
+                            width: "100%",
+                            color: "#374151",
+                            fontSize: 14,
+                          }}
+                        >
+                          <Picker.Item label="Seleccione tipo" value="" />
+                          {vehicleTypes.map((type) => (
+                            <Picker.Item key={type} label={type} value={type} />
+                          ))}
+                        </Picker>
+                      </View>
+                    </VStack>
 
-                  {shouldShowMonto && (
-                    <VStack className="flex-[0.5] space-y-1">
-                      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                        Monto
+                    <VStack className="flex-1">
+                      <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                        Marca
                       </Text>
-                      <View className="w-full h-14">
+                      <View
+                        style={{
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "#d1d5db",
+                          height: 48,
+                          overflow: "hidden",
+                          justifyContent: "center",
+                          backgroundColor: "#fff",
+                        }}
+                      >
+                        <Picker
+                          selectedValue={formData.marca}
+                          onValueChange={(value) =>
+                            handleInputChange("marca", value)
+                          }
+                          style={{
+                            width: "100%",
+                            color: "#374151",
+                            fontSize: 14,
+                          }}
+                        >
+                          <Picker.Item label="Seleccione marca" value="" />
+                          {popularBrands.map((brand) => (
+                            <Picker.Item
+                              key={brand}
+                              label={brand}
+                              value={brand}
+                            />
+                          ))}
+                        </Picker>
+                      </View>
+                    </VStack>
+                  </HStack>
+                </VStack>
+
+                <VStack space="md">
+                  <Text className="text-base font-semibold text-black mb-2">
+                    Forma de pago y destino
+                  </Text>
+
+                  <HStack space="md" className="w-full">
+                    <VStack className="flex-1">
+                      <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                        Forma pago
+                      </Text>
+                      <View
+                        style={{
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "#d1d5db",
+                          height: 48,
+                          overflow: "hidden",
+                          justifyContent: "center",
+                          backgroundColor: "#fff",
+                        }}
+                      >
+                        <Picker
+                          selectedValue={formData.pago}
+                          onValueChange={(value) => {
+                            const resetData: Partial<typeof formData> = {
+                              pago: value,
+                            };
+
+                            if (value !== "efectivo") {
+                              resetData.monto = 0;
+                            }
+
+                            if (value !== "boleta") {
+                              resetData.boleta = "";
+                            }
+
+                            setFormData({ ...formData, ...resetData });
+                          }}
+                          style={{
+                            width: "100%",
+                            color: "#374151",
+                            fontSize: 14,
+                          }}
+                        >
+                          <Picker.Item label="Seleccione una opción" value="" />
+                          {paymentTypes.map((type) => (
+                            <Picker.Item
+                              key={type}
+                              label={
+                                type.charAt(0).toUpperCase() + type.slice(1)
+                              }
+                              value={type}
+                            />
+                          ))}
+                        </Picker>
+                      </View>
+                    </VStack>
+
+                    {shouldShowMonto && (
+                      <VStack className="flex-1">
+                        <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                          Monto ($)
+                        </Text>
                         <TextInput
                           keyboardType="numeric"
-                          placeholder="Ingresa el monto"
+                          placeholder="20000"
                           value={String(formData.monto)}
                           onChangeText={(text) =>
                             setFormData({
@@ -366,74 +398,117 @@ export default function Ingreso() {
                             })
                           }
                           style={{
-                            borderRadius: 10,
-                            borderWidth: 1.5,
-                            borderColor: "#ccc",
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "#d1d5db",
                             paddingHorizontal: 16,
-                            height: "100%",
+                            height: 48,
                             fontSize: 14,
-                            color: "#333",
+                            color: "#374151",
+                            backgroundColor: "#fff",
                           }}
-                          className="w-full h-full"
                         />
-                      </View>
-                    </VStack>
-                  )}
+                      </VStack>
+                    )}
 
-                  {shouldShowBoleta && (
-                    <VStack className="flex-[0.5]">
-                      <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                        Boleta
-                      </Text>
-                      <View className="w-full h-14">
+                    {shouldShowBoleta && (
+                      <VStack className="flex-1">
+                        <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                          Boleta
+                        </Text>
                         <TextInput
                           value={formData.boleta}
                           onChangeText={(text) =>
                             setFormData({ ...formData, boleta: text })
                           }
                           style={{
-                            borderRadius: 10,
-                            borderWidth: 1.5,
-                            borderColor: "#ccc",
+                            borderRadius: 8,
+                            borderWidth: 1,
+                            borderColor: "#d1d5db",
+                            paddingHorizontal: 16,
+                            height: 48,
+                            fontSize: 14,
+                            color: "#374151",
+                            backgroundColor: "#fff",
                           }}
-                          className="w-full h-14 px-4 text-base"
                         />
-                      </View>
-                    </VStack>
-                  )}
-                </HStack>
+                      </VStack>
+                    )}
+                  </HStack>
 
-                <VStack>
-                  <Text className="text-sm font-bold px-1 pb-1 text-gray-800 font-inter">
-                    Observaciones
-                  </Text>
-                  <View
-                    className="w-full h-28 bg-gray-100 rounded-md border-gray-100 "
-                    style={{
-                      borderRadius: 10,
-                      borderWidth: 1.5,
-                      borderColor: "#ccc",
-                    }}
-                  >
+                  <VStack>
+                    <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                      Destino
+                    </Text>
+                    <TextInput
+                      placeholder="Finca 21 valle grande"
+                      value={formData.destino}
+                      onChangeText={(text) =>
+                        handleInputChange("destino", text)
+                      }
+                      style={{
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: "#d1d5db",
+                        paddingHorizontal: 16,
+                        height: 48,
+                        fontSize: 14,
+                        color: "#374151",
+                        backgroundColor: "#fff",
+                      }}
+                    />
+                  </VStack>
+
+                  <VStack>
+                    <Text className="text-sm font-medium px-1 pb-2 text-gray-700">
+                      Observaciones
+                    </Text>
                     <TextInput
                       value={formData.observaciones}
                       onChangeText={(text) =>
                         setFormData({ ...formData, observaciones: text })
                       }
+                      placeholder="Vehículo entra a las 12:33"
                       multiline
-                      className="w-full px-4 text-base"
+                      numberOfLines={3}
+                      style={{
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: "#d1d5db",
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        height: 80,
+                        fontSize: 14,
+                        color: "#374151",
+                        backgroundColor: "#fff",
+                        textAlignVertical: "top",
+                      }}
                     />
-                  </View>
+                  </VStack>
                 </VStack>
 
-                <Button
-                  onPress={handleSubmit}
-                  className="w-full h-14 bg-[#F64C95] rounded-lg mt-2 active:bg-[#D83E7F]"
-                >
-                  <ButtonText className="text-white text-lg font-bold">
-                    Ingresar
-                  </ButtonText>
-                </Button>
+                <HStack space="md" className="w-full mt-4 mb-20">
+                  <TouchableOpacity
+                    onPress={handleCancel}
+                    className="flex-1 h-14 bg-gray-200 rounded-lg items-center justify-center"
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-gray-800 text-base font-semibold">
+                      Cancelar
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={handleSubmit}
+                    className="flex-1 h-14 bg-black rounded-lg items-center justify-center flex-row"
+                    activeOpacity={0.8}
+                  >
+                    <Text className="text-white text-base font-semibold mr-2">
+                      Ingresar
+                    </Text>
+                    <ArrowRight color="#fff" size={20} />
+                  </TouchableOpacity>
+                </HStack>
               </VStack>
             </FormControl>
           </View>

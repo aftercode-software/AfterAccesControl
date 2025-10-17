@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   View,
@@ -8,17 +10,9 @@ import {
   Platform,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { MovimientoServer } from "@/interfaces/interfaces";
+import type { MovimientoServer } from "@/interfaces/interfaces";
 import ModalComponent from "@/components/Modal";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import {
-  ArrowUp,
-  Bike,
-  Car,
-  CarFront,
-  Tractor,
-  Truck,
-} from "lucide-react-native";
+import { Bike, Car, CarFront, Tractor, Truck } from "lucide-react-native";
 import { useData } from "@/hooks/useData";
 
 export default function Salida() {
@@ -26,7 +20,7 @@ export default function Salida() {
   const [data, setData] = useState<MovimientoServer[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedData, setSelectedData] = useState<MovimientoServer | null>(
-    null
+    null,
   );
 
   const getVehicleIcon = (type: string) => {
@@ -34,30 +28,29 @@ export default function Salida() {
       case "transganado":
       case "tractor pesado":
       case "grua":
-        return <Tractor color={"#000"} />;
+        return <Tractor color={"#000"} size={28} />;
       case "camion":
       case "tractor liviano":
       case "2 ejes":
-        return <Truck color={"#000"} />;
+        return <Truck color={"#000"} size={28} />;
       case "camioneta":
       case "suv":
       case "camioneta cabina simple":
       case "camioneta doble":
       case "automovil":
-        return <Car color={"#000"} />;
+        return <Car color={"#000"} size={28} />;
       case "moto":
       case "bicicleta":
       case "otro":
-        return <Bike color={"#000"} />;
+        return <Bike color={"#000"} size={28} />;
       default:
-        return <CarFront color={"#000"} />;
+        return <CarFront color={"#000"} size={28} />;
     }
   };
 
   const fetchData = async () => {
     try {
       const result = await getSentData();
-
       setData(result);
     } catch (error) {
       console.error("Error al obtener datos enviados:", error);
@@ -67,7 +60,7 @@ export default function Salida() {
   useFocusEffect(
     React.useCallback(() => {
       fetchData();
-    }, [])
+    }, []),
   );
 
   const handleCardPress = (item: MovimientoServer) => {
@@ -91,47 +84,63 @@ export default function Salida() {
   };
 
   return (
-    <GluestackUIProvider mode="light">
-      <ScrollView
-        nestedScrollEnabled
-        contentContainerStyle={{ flexGrow: 1, backgroundColor: "#fff" }}
+    <ScrollView
+      nestedScrollEnabled
+      scrollEnabled
+      contentContainerStyle={{ flexGrow: 1, backgroundColor: "#fff" }}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View className="w-full bg-white p-6  pt-20">
-            <Text className="text-4xl mb-6 font-bold text-left text-black font-inter">
-              Salida <ArrowUp color={"#000"} />
+        <View className="w-full bg-white px-5 pt-6 pb-6">
+          <View className="flex-row items-center mb-2 mt-6">
+            <Text className="text-4xl font-bold text-black">Salida</Text>
+          </View>
+          <View className="mb-6 mt-6">
+            <Text className="text-2xl font-medium text-black">
+              Seleccione el vehículo
             </Text>
-            {data.length === 0 && (
-              <Text className="text-lg font-semibold text-center mt-96 text-black font-inter">
-                No hay vehículos para marcar salida
-              </Text>
-            )}
-            {data.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                className="bg-white p-4 my-2 rounded-lg shadow-md flex-row items-center"
-                onPress={() => handleCardPress(item)}
-              >
-                <View className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+          </View>
+
+          {data.length === 0 && (
+            <Text className="text-base text-center mt-32 text-gray-500">
+              No hay vehículos para marcar salida
+            </Text>
+          )}
+
+          {data.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              className="bg-white p-4 mb-3 rounded-xl border border-gray-200 flex-row items-center justify-between"
+              onPress={() => handleCardPress(item)}
+            >
+              <View className="flex-row items-center flex-1">
+                <View className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center mr-4">
                   {getVehicleIcon(item.vehiculo)}
                 </View>
-                <Text className="text-lg font-semibold font-inter">
-                  {item.chapa} - {item.nombre}
-                </Text>
-              </TouchableOpacity>
-            ))}
 
-            <ModalComponent
-              isModalVisible={isModalVisible}
-              setIsModalVisible={setIsModalVisible}
-              selectedData={selectedData}
-              handleMarcarSalida={handleMarcarSalida}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
-    </GluestackUIProvider>
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-black mb-1">
+                    {item.chapa}
+                  </Text>
+                  <Text className="text-sm text-gray-600">{item.nombre}</Text>
+                </View>
+              </View>
+
+              <Text className="text-sm text-gray-500 ml-2">
+                {item.horaIngreso}
+              </Text>
+            </TouchableOpacity>
+          ))}
+
+          <ModalComponent
+            isModalVisible={isModalVisible}
+            setIsModalVisible={setIsModalVisible}
+            selectedData={selectedData}
+            handleMarcarSalida={handleMarcarSalida}
+          />
+        </View>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 }

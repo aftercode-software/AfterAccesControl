@@ -29,7 +29,7 @@ export default function Index() {
         toValue: 2,
         duration: 2000,
         useNativeDriver: true,
-      })
+      }),
     );
     rotateAnimation.start();
 
@@ -51,7 +51,7 @@ export default function Index() {
       }}
     >
       <Animated.Image
-        source={require("/assets/logo2.png")}
+        source={require("/assets/logo.png")}
         style={{
           width: 200,
           height: 220,

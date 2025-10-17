@@ -1,13 +1,21 @@
-import { MovimientoServer } from "@/interfaces/interfaces";
-import { Text, TouchableOpacity, View } from "react-native";
-import Modal from "react-native-modal";
+import React from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import { X } from "lucide-react-native";
+import type { MovimientoServer } from "@/interfaces/interfaces";
 
-interface ModalComponentProps {
+interface Props {
   isModalVisible: boolean;
-  setIsModalVisible: (value: boolean) => void;
+  setIsModalVisible: (v: boolean) => void;
   selectedData?: MovimientoServer | null;
-  handleMarcarSalida: () => void;
+  handleMarcarSalida: (id: number) => Promise<void>;
 }
 
 export default function ModalComponent({
@@ -15,53 +23,119 @@ export default function ModalComponent({
   setIsModalVisible,
   selectedData,
   handleMarcarSalida,
-}: ModalComponentProps) {
+}: Props) {
   return (
-    <Modal isVisible={isModalVisible} backdropOpacity={0.5}>
-      <View className="bg-white p-6 rounded-lg">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-xl font-bold font-inter">
-            {selectedData
-              ? `${selectedData.chapa} - ${selectedData.nombre}`
-              : "Detalles"}
-          </Text>
-          <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-            <X color="#000" size={24} />
-          </TouchableOpacity>
-        </View>
+    <Modal
+      visible={isModalVisible}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      onRequestClose={() => setIsModalVisible(false)}
+      presentationStyle="overFullScreen"
+    >
+      <Pressable
+        style={styles.backdrop}
+        onPress={() => setIsModalVisible(false)}
+      />
 
-        {selectedData ? (
-          <View className="mb-6">
-            <Text className="text-lg font-inter text-gray-800 mb-2">
-              <Text className="font-bold font-inter">Destino:</Text>{" "}
-              {selectedData.destino}
+      <View style={styles.centerWrap} pointerEvents="box-none">
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <Text style={styles.title}>
+              {selectedData
+                ? `${selectedData.chapa} - ${selectedData.nombre}`
+                : "Detalles"}
             </Text>
-            <Text className="text-lg font-inter text-gray-800 mb-2">
-              <Text className="font-bold font-inter">Chapa y cedula:</Text>{" "}
-              {selectedData.chapa} - {selectedData.cedula}
-            </Text>
-            <Text className="text-lg font-inter text-gray-800 mb-2">
-              <Text className="font-bold font-inter">Ingreso:</Text>{" "}
-              {selectedData.fechaIngreso} - {selectedData.horaIngreso}
-            </Text>
+            <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+              <X color="#000" size={24} />
+            </TouchableOpacity>
           </View>
-        ) : (
-          <Text className="text-red-500 text-lg">
-            No hay datos seleccionados
-          </Text>
-        )}
 
-        {selectedData && (
-          <TouchableOpacity
-            className="bg-slate-600 px-6 py-3 rounded-lg mb-2"
-            onPress={handleMarcarSalida}
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 8 }}
+            showsVerticalScrollIndicator={false}
           >
-            <Text className="text-white font-bold text-lg text-center">
-              Marcar Salida
-            </Text>
-          </TouchableOpacity>
-        )}
+            {selectedData ? (
+              <View>
+                <Text style={styles.row}>
+                  <Text style={styles.bold}>Destino: </Text>
+                  {selectedData.destino}
+                </Text>
+                <Text style={styles.row}>
+                  <Text style={styles.bold}>Chapa y cédula: </Text>
+                  {selectedData.chapa} - {selectedData.cedula}
+                </Text>
+                <Text style={styles.row}>
+                  <Text style={styles.bold}>Ingreso: </Text>
+                  {selectedData.fechaIngreso} - {selectedData.horaIngreso}
+                </Text>
+              </View>
+            ) : (
+              <Text style={{ color: "#ef4444", fontSize: 16 }}>
+                No hay datos seleccionados
+              </Text>
+            )}
+          </ScrollView>
+
+          {selectedData && (
+            <TouchableOpacity
+              style={styles.cta}
+              onPress={() =>
+                handleMarcarSalida(selectedData?.localId ?? selectedData?.id)
+              }
+            >
+              <Text style={styles.ctaText}>Marcar Salida</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  centerWrap: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  card: {
+    width: "100%",
+    maxWidth: 480,
+    maxHeight: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  title: { fontSize: 18, fontWeight: "700" },
+  row: { fontSize: 16, color: "#1f2937", marginBottom: 8 },
+  bold: { fontWeight: "700" },
+  cta: {
+    backgroundColor: "#475569",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  ctaText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+});

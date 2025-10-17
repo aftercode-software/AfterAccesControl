@@ -5,6 +5,8 @@ import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { ToastProvider } from "react-native-toast-notifications";
 import { DataProvider } from "@/context/DataContext";
 import * as SplashScreen from "expo-splash-screen";
+import { RootSiblingParent } from "react-native-root-siblings";
+import ToastManager from "toastify-react-native";
 import {
   useFonts,
   Inter_100Thin,
@@ -18,9 +20,7 @@ import {
   Inter_900Black,
 } from "@expo-google-fonts/inter";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CheckCheck, SquareX, TriangleAlert } from "lucide-react-native";
 
-// Prevenir que el Splash Screen se oculte automáticamente
 SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
@@ -38,26 +38,18 @@ export default function Layout() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync(); // Oculta el Splash Screen cuando las fuentes estén cargadas
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return null; // Mostrar nada hasta que las fuentes estén listas
+    return null;
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ToastProvider
-        placement="top"
-        offset={50}
-        successColor="green"
-        successIcon={<CheckCheck color={"#fff"} />}
-        warningColor="orange"
-        warningIcon={<TriangleAlert color={"#fff"} />}
-        dangerColor="#a53333"
-        dangerIcon={<SquareX color={"#fff"} className="pr-2" />}
-      >
+    <RootSiblingParent>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ToastManager />
         <AuthProvider>
           <DataProvider>
             <GluestackUIProvider mode="light">
@@ -65,7 +57,7 @@ export default function Layout() {
             </GluestackUIProvider>
           </DataProvider>
         </AuthProvider>
-      </ToastProvider>
-    </SafeAreaView>
+      </SafeAreaView>
+    </RootSiblingParent>
   );
 }

@@ -1,5 +1,17 @@
-import React, { useContext, useState, useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+"use client";
+
+import { useContext, useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { Button, ButtonText } from "@/components/ui/button";
 import { FormControl } from "@/components/ui/form-control";
@@ -7,7 +19,9 @@ import { Input, InputField } from "@/components/ui/input";
 import { VStack } from "@/components/ui/vstack";
 import { AuthContext } from "@/context/AuthContext";
 import { router } from "expo-router";
-import { useToast } from "react-native-toast-notifications";
+import { Toast } from "toastify-react-native";
+
+import { getAxiosErrorMessage } from "@/utilities/axiosError";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -15,8 +29,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-
-  const toast = useToast();
 
   useEffect(() => {
     setIsButtonDisabled(!(username.trim() && password.trim()));
@@ -29,21 +41,14 @@ export default function Login() {
     try {
       const success = await login(username, password);
       if (success) {
-        toast.show("Inicio exitoso", {
-          type: "success",
-          placement: "top",
-        });
+        Toast.success("Bienvenido");
         router.replace("/ingreso");
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Ocurrió un error inesperado durante el inicio de sesión.";
+      console.log("Error en handleLogin:", error);
+      const msg = getAxiosErrorMessage(error);
 
-      toast.show(errorMessage, {
-        type: "danger",
-      });
+      Toast.error("Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
@@ -51,55 +56,92 @@ export default function Login() {
 
   return (
     <GluestackUIProvider mode="light">
-      <View className="flex items-center justify-center h-full p-4">
-        <View className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
-          <Text className="text-4xl font-bold text-center text-black mb-4 font-inter">
-            AfterAccess
-          </Text>
-          <Text className="text-center text-base mb-6 font-inter">
-            Inicia sesión con tu sucursal y contraseña
-          </Text>
-          <FormControl>
-            <VStack space="lg">
-              <VStack space="xs">
-                <Input className="w-full h-14 bg-gray-100 rounded-md border-gray-100 font-inter">
-                  <InputField
-                    type="text"
-                    placeholder="Usuario"
-                    value={username}
-                    onChangeText={setUsername}
-                  />
-                </Input>
-              </VStack>
-              <VStack space="xs">
-                <Input className="w-full h-14 bg-gray-100 rounded-md border-gray-100 font-inter">
-                  <InputField
-                    type="password"
-                    placeholder="Contraseña"
-                    value={password}
-                    onChangeText={setPassword}
-                    onSubmitEditing={handleLogin}
-                    returnKeyType="done"
-                  />
-                </Input>
-              </VStack>
-              <Button
-                className="w-full h-14 bg-[#F64C95] rounded-lg mt-2 disabled:bg-slate-600 active:bg-[#D83E7F]"
-                onPress={handleLogin}
-                disabled={isButtonDisabled || loading}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <ButtonText className="text-white text-lg font-bold font-inter">
-                    Iniciar Sesión
-                  </ButtonText>
-                )}
-              </Button>
-            </VStack>
-          </FormControl>
-        </View>
-      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: "white" }}
+        behavior={Platform.select({ ios: "padding", android: undefined })}
+        keyboardVerticalOffset={Platform.select({ ios: 64, android: 0 })}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: "center",
+              padding: 24,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View className="w-full max-w-sm self-center">
+              <View className="flex flex-row mb-10 justify-center">
+                <Image
+                  source={require("../../assets/logo-black.png")}
+                  className="w-20 h-20"
+                  resizeMode="contain"
+                />
+              </View>
+
+              <Text className="text-3xl font-bold text-center text-black mb-2 font-inter">
+                Iniciar Sesión
+              </Text>
+
+              <Text className="text-center text-sm text-gray-600 mb-10 font-inter">
+                Ingresá tu usuario
+              </Text>
+
+              <FormControl>
+                <VStack space="lg">
+                  <VStack space="xs">
+                    <Text className="text-sm font-medium text-black mb-1 font-inter">
+                      Usuario
+                    </Text>
+                    <Input className="w-full h-14 bg-white rounded-lg border border-gray-300 font-inter">
+                      <InputField
+                        placeholder="Usuario"
+                        value={username}
+                        onChangeText={setUsername}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        returnKeyType="next"
+                        onSubmitEditing={() => Keyboard.dismiss()}
+                      />
+                    </Input>
+                  </VStack>
+
+                  <VStack space="xs">
+                    <Text className="text-sm font-medium text-black mb-1 font-inter">
+                      Contraseña
+                    </Text>
+                    <Input className="w-full h-14 bg-white rounded-lg border border-gray-300 font-inter">
+                      <InputField
+                        placeholder="••••••••"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        autoCapitalize="none"
+                        returnKeyType="done"
+                        onSubmitEditing={handleLogin}
+                      />
+                    </Input>
+                  </VStack>
+
+                  <Button
+                    className="w-full h-14 bg-black rounded-lg mt-4 disabled:bg-gray-400 active:bg-gray-800"
+                    onPress={handleLogin}
+                    disabled={isButtonDisabled || loading}
+                  >
+                    {loading ? (
+                      <ActivityIndicator size="small" color="#FFF" />
+                    ) : (
+                      <ButtonText className="text-white text-base font-semibold font-inter">
+                        Continuar
+                      </ButtonText>
+                    )}
+                  </Button>
+                </VStack>
+              </FormControl>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </GluestackUIProvider>
   );
 }
