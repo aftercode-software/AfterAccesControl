@@ -1,17 +1,16 @@
-import { Pressable } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { TabIconProps } from "@/interfaces/tabIcon";
 
-export default function TabIcon({ IconComponent, color }: TabIconProps) {
+export default function TabIcon({ IconComponent, color, focused }: TabIconProps) {
   return (
-    <Pressable
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      android_ripple={null}
-    >
+    <View className="items-center gap-[3px]">
       <IconComponent color={color} />
-    </Pressable>
+      <View
+        className={`h-[3px] w-[18px] bg-amber ${
+          focused ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </View>
   );
 }

@@ -10,6 +10,7 @@ import * as SecureStore from "expo-secure-store";
 import { useToast } from "react-native-toast-notifications";
 import { User } from "@/interfaces/interfaces";
 import { AuthContextType } from "@/interfaces/interfaces";
+import { API_BASE_URL } from "@/config/api";
 
 export const AuthContext = createContext<AuthContextType>(
   {} as AuthContextType
@@ -26,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ): Promise<boolean> => {
     try {
       const response = await axios.post(
-        "https://backend-afteraccess.vercel.app/login",
+        `${API_BASE_URL}/login`,
         { username, password }
       );
 

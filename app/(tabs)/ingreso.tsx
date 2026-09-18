@@ -1,109 +1,75 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useCallback, useState } from "react";
 import {
-  View,
-  Text,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  RefreshControl,
   ScrollView,
-  TextInput,
+  Text,
+  View,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { Button, ButtonText } from "@/components/ui/button";
-import { FormControl } from "@/components/ui/form-control";
-import { VStack } from "@/components/ui/vstack";
-import { HStack } from "@/components/ui/hstack";
+import { CloudOff, RefreshCw } from "lucide-react-native";
 import { useToast } from "react-native-toast-notifications";
 import { Movimiento } from "@/interfaces/interfaces";
-
-import { getAllChapas } from "@/utilities/getChapas";
-import { router } from "expo-router";
-import CustomInput from "@/components/CustomInput";
-import CustomPicker from "@/components/CustomPicker";
 import { getCurrentDateTimeInParaguay } from "@/utilities/dateTime";
-import {
-  ArrowDown,
-  ChevronDownIcon,
-  CloudAlert,
-  Search,
-} from "lucide-react-native";
-import BuscadorChapa from "@/components/BuscadorChapa";
 import { paymentTypes, popularBrands, vehicleTypes } from "@/constants/ingreso";
 import { useData } from "@/hooks/useData";
-import { useAuth } from "@/hooks/useAuth";
-import SectionTitle from "@/components/SectionTitle";
-import SectionSubTitle from "@/components/SectionSubtitle";
-import {
-  Select,
-  SelectInput,
-  SelectIcon,
-  SelectTrigger,
-  SelectBackdrop,
-  SelectDragIndicator,
-  SelectDragIndicatorWrapper,
-  SelectContent,
-  SelectPortal,
-  SelectItem,
-} from "@/components/ui/select";
+import ConnectionPill from "@/components/ui/ConnectionPill";
+import Field from "@/components/ui/Field";
+import PrimaryButton from "@/components/ui/PrimaryButton";
+import SelectField from "@/components/ui/SelectField";
+import { colors } from "@/styles/tokens";
+
+const createInitialFormData = () => ({
+  nombre: "",
+  horaIngreso: "",
+  cedula: "",
+  marca: "",
+  vehiculo: "",
+  chapa: "",
+  destino: "",
+  fechaIngreso: "",
+  monto: 0 as number | "",
+  pago: "",
+  boleta: "",
+  observaciones: "",
+});
 
 export default function Ingreso() {
-  const [chapas, setChapas] = useState<Movimiento[]>([]);
+  const [formData, setFormData] = useState(createInitialFormData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const toast = useToast();
-  const { saveFormData, pendingData, retryPendingData } = useData();
-  const { user } = useAuth();
-
-  const token = user?.token;
-
-  const [formData, setFormData] = useState({
-    nombre: "",
-    horaIngreso: "",
-    cedula: "",
-    marca: "",
-    vehiculo: "",
-    chapa: "",
-    destino: "",
-    fechaIngreso: "",
-    monto: 0 as number | "",
-    pago: "",
-    boleta: "",
-    observaciones: "",
-  });
-
-  const [mostrarOpciones, setMostrarOpciones] = useState(false);
-
+  const {
+    connectionStatus,
+    refreshConnection,
+    saveFormData,
+    pendingData,
+    pendingExits,
+    retryPendingData,
+  } = useData();
+  const isConnected = connectionStatus === "connected";
   const { currentDate, currentTime } = getCurrentDateTimeInParaguay();
 
-  useEffect(() => {
-    const obtenerChapas = async () => {
-      if (!token) {
-        router.replace("/login");
-        return;
-      }
-
-      try {
-        const chapas = await getAllChapas(token);
-        if (chapas) {
-          setChapas(chapas);
-        }
-      } catch (error: any) {
-        toast.show("No se pudieron cargar las chapas", {
-          type: "danger",
-          placement: "top",
-        });
-        console.error("Error al obtener chapas:", error);
-      }
-    };
-
-    obtenerChapas();
-  }, [token]);
-
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
+  const handleInputChange = (
+    field: keyof typeof formData,
+    value: string
+  ) => {
+    setFormData((previous) => ({
+      ...previous,
       [field]: value,
     }));
   };
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshConnection();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refreshConnection]);
 
   const shouldShowMonto =
     formData.pago !== "boleta" &&
@@ -112,335 +78,251 @@ export default function Ingreso() {
   const shouldShowBoleta = formData.pago === "boleta";
 
   const handleSubmit = async () => {
-    try {
-      const camposObligatorios: (keyof typeof formData)[] = [
-        "nombre",
-        "cedula",
-        "marca",
-        "vehiculo",
-        "chapa",
-        "destino",
-        "pago",
-      ];
+    if (isSubmitting) return;
 
-      if (formData.pago === "efectivo") {
-        camposObligatorios.push("monto");
+    const requiredFields: (keyof typeof formData)[] = [
+      "nombre",
+      "cedula",
+      "marca",
+      "vehiculo",
+      "chapa",
+      "destino",
+      "pago",
+    ];
+
+    for (const field of requiredFields) {
+      const value = formData[field];
+      if (typeof value !== "string" || value.trim() === "") {
+        toast.show(`El campo ${field} es obligatorio`, {
+          type: "danger",
+          placement: "top",
+        });
+        return;
       }
+    }
 
-      if (formData.pago === "boleta") {
-        camposObligatorios.push("boleta");
-      }
-
-      for (const campo of camposObligatorios) {
-        const valor = formData[campo];
-
-        if (campo === "monto") {
-          if (typeof valor !== "number" || valor <= 0) {
-            toast.show(
-              `El campo ${campo} es obligatorio y debe ser mayor a 0`,
-              {
-                type: "danger",
-                placement: "top",
-              }
-            );
-            return;
-          }
-          continue;
-        }
-
-        if (typeof valor !== "string" || valor.trim() === "") {
-          toast.show(`El campo ${campo} es obligatorio`, {
-            type: "danger",
-            placement: "top",
-          });
-          return;
-        }
-      }
-
-      formData.fechaIngreso = currentDate;
-      formData.horaIngreso = currentTime;
-
-      if (formData.pago === "falta pagar") {
-        formData.monto = "";
-      }
-
-      await saveFormData(formData as Movimiento);
-      setFormData({
-        nombre: "",
-        horaIngreso: "",
-        cedula: "",
-        marca: "",
-        vehiculo: "",
-        chapa: "",
-        destino: "",
-        fechaIngreso: "",
-        monto: 0,
-        pago: "",
-        boleta: "",
-        observaciones: "",
+    if (formData.pago === "efectivo" &&
+      (typeof formData.monto !== "number" || formData.monto <= 0)) {
+      toast.show("El monto debe ser mayor a 0", {
+        type: "danger",
+        placement: "top",
       });
+      return;
+    }
+
+    if (formData.pago === "boleta" && !formData.boleta.trim()) {
+      toast.show("El número de boleta es obligatorio", {
+        type: "danger",
+        placement: "top",
+      });
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      fechaIngreso: currentDate,
+      horaIngreso: currentTime,
+      monto: formData.pago === "falta pagar" ? "" : formData.monto,
+    };
+
+    setIsSubmitting(true);
+    try {
+      await saveFormData(payload as Movimiento);
+      setFormData(createInitialFormData());
     } catch (error) {
       console.error("Error al enviar datos:", error);
-      Alert.alert("Error", "No se pudo enviar la información al servidor.");
+      Alert.alert("Error", "No se pudo guardar la información.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const manejarSeleccionChapa = (valor: string) => {
-    const chapaSeleccionada = chapas.find((item) => item.chapa === valor);
-    if (chapaSeleccionada) {
-      setFormData({
-        ...formData,
-        chapa: chapaSeleccionada.chapa,
-        nombre: chapaSeleccionada.nombre,
-        cedula: chapaSeleccionada.cedula,
-        marca: chapaSeleccionada.marca,
-        vehiculo: chapaSeleccionada.vehiculo,
-        destino: formData.destino,
-      });
-    }
-
-    setMostrarOpciones(false);
-  };
+  const hasOfflineState =
+    connectionStatus === "offline" ||
+    connectionStatus === "server-unavailable" ||
+    pendingData.length > 0 ||
+    pendingExits.length > 0;
+  const pendingCount = pendingData.length + pendingExits.length;
 
   return (
-    <ScrollView nestedScrollEnabled scrollEnabled={!mostrarOpciones}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className=""
-      >
-        <View className="w-full bg-white  shadow-lg">
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 6,
-              justifyContent: "space-between",
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      className="flex-1 bg-canvas"
+    >
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-[22px] pb-8 pt-6"
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => {
+              void handleRefresh();
             }}
-          >
-            <SectionTitle title="Ingreso" />
+            refreshing={isRefreshing}
+            tintColor={colors.amberDeep}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="mb-6 flex-row items-start justify-between">
+          <View className="flex-1 pr-3">
+            <Text className="font-inter-semibold text-[30px] leading-[33px] tracking-[-0.9px] text-ink">
+              Registrar ingreso
+            </Text>
+            <Text className="mt-2 font-inter text-[14px] leading-[21px] text-slate">
+              Completá la información del acceso de forma clara y rápida.
+            </Text>
+          </View>
+        </View>
+
+        {hasOfflineState ? (
+          <View className="mb-6 min-h-[48px] flex-row items-center gap-2 bg-amber-soft px-3 py-2">
+            <CloudOff color={colors.amberDeep} size={17} strokeWidth={1.8} />
+            <Text className="flex-1 font-inter-medium text-[11px] leading-4 text-ink">
+              {connectionStatus === "offline"
+                ? "Sin conexión. El registro se guarda localmente."
+                : connectionStatus === "server-unavailable"
+                  ? "Servidor no disponible. El registro se guarda localmente."
+                  : `${pendingCount} operación${pendingCount === 1 ? "" : "es"} esperando sincronización.`}
+            </Text>
+            {isConnected && pendingCount > 0 ? (
+              <Pressable
+                accessibilityLabel="Sincronizar registros pendientes"
+                accessibilityRole="button"
+                onPress={() => {
+                  void retryPendingData();
+                }}
+                className="h-[30px] w-[30px] items-center justify-center active:opacity-70"
+              >
+                <RefreshCw color={colors.amberDeep} size={15} />
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+
+        <View className="gap-6">
+          <Text className="font-inter-semibold text-[17px] tracking-[-0.25px] text-ink">
+            Datos del acceso
+          </Text>
+          <View className="flex-row gap-3">
+            <Field
+              autoCapitalize="characters"
+              containerClassName="flex-1"
+              label="Chapa"
+              onChangeText={(value) => handleInputChange("chapa", value)}
+              placeholder="AB 123 CD"
+              value={formData.chapa}
+            />
+            <Field
+              containerClassName="flex-1"
+              keyboardType="numeric"
+              label="Cédula"
+              onChangeText={(value) => handleInputChange("cedula", value)}
+              placeholder="Número de documento"
+              value={formData.cedula}
+            />
           </View>
 
-          <FormControl className="px-9 mt-10">
-            <VStack space="lg">
-              <SectionSubTitle title="Datos personales" />
-              <Select>
-                <SelectTrigger size="md">
-                  <SelectInput placeholder="Select option" />
-                  <SelectIcon className="mr-3" as={ChevronDownIcon} />
-                </SelectTrigger>
-                <SelectPortal>
-                  <SelectBackdrop />
-                  <SelectContent>
-                    <SelectDragIndicatorWrapper>
-                      <SelectDragIndicator />
-                    </SelectDragIndicatorWrapper>
-                    <SelectItem label="UX Research" value="ux" />
-                    <SelectItem label="Web Development" value="web" />
-                    <SelectItem
-                      label="Cross Platform Development Process"
-                      value="Cross Platform Development Process"
-                    />
+          <Field
+            autoCapitalize="words"
+            label="Nombre"
+            onChangeText={(value) => handleInputChange("nombre", value)}
+            placeholder="Nombre y apellido"
+            value={formData.nombre}
+          />
 
-                    <SelectItem
-                      label="UI Designing"
-                      value="ui"
-                      isDisabled={true}
-                    />
-                    <SelectItem label="Backend Development" value="backend" />
-                  </SelectContent>
-                </SelectPortal>
-              </Select>
-              <HStack space="lg" className="w-full">
-                <CustomInput
-                  tittle="Chapa"
-                  value={formData.chapa}
-                  onChangeText={(text) => handleInputChange("chapa", text)}
-                />
-                <CustomInput
-                  tittle="Cedula"
-                  value={formData.cedula}
-                  onChangeText={(text) => handleInputChange("cedula", text)}
-                />
-              </HStack>
+          <Field
+            autoCapitalize="sentences"
+            label="Destino"
+            onChangeText={(value) => handleInputChange("destino", value)}
+            placeholder="¿A dónde se dirige?"
+            value={formData.destino}
+          />
 
-              <VStack>
-                <CustomInput
-                  tittle="Nombre"
-                  placeholder="Nombre y apellido"
-                  value={formData.nombre}
-                  onChangeText={(text) => handleInputChange("nombre", text)}
-                />
-              </VStack>
+          <View className="flex-row gap-3">
+            <SelectField
+              containerClassName="flex-1"
+              label="Vehículo"
+              onValueChange={(value) => handleInputChange("vehiculo", value)}
+              options={vehicleTypes}
+              value={formData.vehiculo}
+            />
+            <SelectField
+              containerClassName="flex-1"
+              label="Marca"
+              onValueChange={(value) => handleInputChange("marca", value)}
+              options={popularBrands}
+              value={formData.marca}
+            />
+          </View>
 
-              <VStack>
-                <CustomInput
-                  tittle="Destino"
-                  value={formData.destino}
-                  onChangeText={(text) => handleInputChange("destino", text)}
-                />
-              </VStack>
+          <Text className="font-inter-semibold text-[17px] tracking-[-0.25px] text-ink">
+            Forma de pago
+          </Text>
+          <SelectField
+            label="Pago"
+            onValueChange={(value) => {
+              setFormData((previous) => ({
+                ...previous,
+                pago: value,
+                monto: value === "efectivo" ? previous.monto : 0,
+                boleta: value === "boleta" ? previous.boleta : "",
+              }));
+            }}
+            options={paymentTypes}
+            placeholder="Seleccionar forma de pago"
+            value={formData.pago}
+          />
 
-              <HStack space="lg" className="w-full">
-                <CustomPicker
-                  arrayOpciones={vehicleTypes}
-                  tittle="Vehiculo"
-                  value={formData.vehiculo}
-                  onChangeText={(text) => handleInputChange("vehiculo", text)}
-                />
-                <CustomPicker
-                  arrayOpciones={popularBrands}
-                  tittle="Marca"
-                  value={formData.marca}
-                  onChangeText={(text) => handleInputChange("marca", text)}
-                />
-              </HStack>
+          {shouldShowMonto ? (
+            <Field
+              keyboardType="numeric"
+              label="Monto"
+              onChangeText={(value) =>
+                setFormData((previous) => ({
+                  ...previous,
+                  monto: value === "" ? 0 : Number(value),
+                }))
+              }
+              placeholder="Ingresá el monto"
+              value={formData.monto === "" ? "" : String(formData.monto)}
+            />
+          ) : null}
 
-              <HStack space="lg">
-                <VStack className="flex-[0.5]">
-                  <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
-                    Forma pago
-                  </Text>
-                  <View
-                    style={{
-                      borderRadius: 10,
-                      borderWidth: 1.5,
-                      borderColor: "#ccc",
-                      height: 50,
-                      overflow: "hidden",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Picker
-                      selectedValue={formData.pago}
-                      onValueChange={(value) => {
-                        const resetData: Partial<typeof formData> = {
-                          pago: value,
-                        };
+          {shouldShowBoleta ? (
+            <Field
+              label="Número de boleta"
+              onChangeText={(value) => handleInputChange("boleta", value)}
+              placeholder="Ingresá el número"
+              value={formData.boleta}
+            />
+          ) : null}
 
-                        if (value !== "Efectivo") {
-                          resetData.monto = 0;
-                        }
+          <Field
+            label="Observaciones"
+            multiline
+            onChangeText={(value) =>
+              handleInputChange("observaciones", value)
+            }
+            placeholder="Información adicional (opcional)"
+            value={formData.observaciones}
+          />
 
-                        if (value !== "Boleta") {
-                          resetData.boleta = "";
-                        }
-
-                        setFormData({ ...formData, ...resetData });
-                      }}
-                      style={{
-                        width: "100%",
-                        color: "#333",
-                        fontSize: 14,
-                      }}
-                      itemStyle={{
-                        fontSize: 14,
-                      }}
-                    >
-                      <Picker.Item
-                        label={"Seleccione una opción"}
-                        value=""
-                        style={{ color: "#F64C95" }}
-                      />
-                      {paymentTypes.map((type) => (
-                        <Picker.Item
-                          key={type}
-                          label={type.charAt(0).toUpperCase() + type.slice(1)}
-                          value={type}
-                        />
-                      ))}
-                    </Picker>
-                  </View>
-                </VStack>
-
-                {shouldShowMonto && (
-                  <VStack className="flex-[0.5] space-y-1">
-                    <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
-                      Monto
-                    </Text>
-                    <View className="w-full h-14">
-                      <TextInput
-                        keyboardType="numeric"
-                        placeholder="Ingresa el monto"
-                        value={String(formData.monto)}
-                        onChangeText={(text) =>
-                          setFormData({
-                            ...formData,
-                            monto: Number(text),
-                          })
-                        }
-                        style={{
-                          borderRadius: 10,
-                          borderWidth: 1.5,
-                          borderColor: "#ccc",
-                          paddingHorizontal: 16,
-                          height: "100%",
-                          fontSize: 14,
-                          color: "#333",
-                        }}
-                        className="w-full h-full"
-                      />
-                    </View>
-                  </VStack>
-                )}
-
-                {shouldShowBoleta && (
-                  <VStack className="flex-[0.5]">
-                    <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
-                      Boleta
-                    </Text>
-                    <View className="w-full h-14">
-                      <TextInput
-                        value={formData.boleta}
-                        onChangeText={(text) =>
-                          setFormData({ ...formData, boleta: text })
-                        }
-                        style={{
-                          borderRadius: 10,
-                          borderWidth: 1.5,
-                          borderColor: "#ccc",
-                        }}
-                        className="w-full h-14 px-4 text-base"
-                      />
-                    </View>
-                  </VStack>
-                )}
-              </HStack>
-
-              <VStack>
-                <Text className="text-sm font-bold px-1 pb-1 text-gray-800 ">
-                  Observaciones
-                </Text>
-                <View
-                  className="w-full h-28 bg-gray-100 rounded-md border-gray-100 "
-                  style={{
-                    borderRadius: 10,
-                    borderWidth: 1.5,
-                    borderColor: "#ccc",
-                  }}
-                >
-                  <TextInput
-                    value={formData.observaciones}
-                    onChangeText={(text) =>
-                      setFormData({ ...formData, observaciones: text })
-                    }
-                    multiline
-                    className="w-full px-4 text-base"
-                  />
-                </View>
-              </VStack>
-
-              <Button
-                onPress={handleSubmit}
-                className="w-full h-14 bg-[#F64C95] rounded-lg mt-2 active:bg-[#D83E7F]"
-              >
-                <ButtonText className="text-white text-lg font-bold">
-                  Ingresar
-                </ButtonText>
-              </Button>
-            </VStack>
-          </FormControl>
+          <PrimaryButton
+            loading={isSubmitting}
+            onPress={() => {
+              void handleSubmit();
+            }}
+            className="mt-2"
+          >
+            Registrar ingreso
+          </PrimaryButton>
         </View>
-      </KeyboardAvoidingView>
-    </ScrollView>
+
+        <Text className="mt-8 font-inter-semibold text-[9px] tracking-[1px] text-slate-muted">
+          ETRACK ACCESS / REGISTRO CLARO
+        </Text>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

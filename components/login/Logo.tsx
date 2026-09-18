@@ -1,14 +1,5 @@
-import { Image } from "react-native";
+import BrandLogo from "@/components/ui/BrandLogo";
 
 export default function Logo() {
-  return (
-    <Image
-      source={require("@/assets/logoDark.png")}
-      className="w-22 h-20 mx-auto mb-4"
-      style={{
-        width: 60,
-        height: 66,
-      }}
-    />
-  );
+  return <BrandLogo className="h-[60px] w-[138px]" />;
 }

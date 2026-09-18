@@ -10,7 +10,6 @@ import {
   VirtualizedList,
   FlatList,
   SectionList,
-  StyleSheet,
 } from "react-native";
 import { PrimitiveIcon, UIIcon } from "@gluestack-ui/icon";
 import { tva } from "@gluestack-ui/nativewind-utils/tva";
@@ -89,11 +88,11 @@ cssInterop(PrimitiveIcon, {
 const actionsheetStyle = tva({ base: "w-full h-full web:pointer-events-none" });
 
 const actionsheetContentStyle = tva({
-  base: "items-center rounded-tl-3xl rounded-tr-3xl p-2 bg-white web:pointer-events-auto web:select-none shadow-lg",
+  base: "items-center p-2 bg-white web:pointer-events-auto web:select-none shadow-lg",
 });
 
 const actionsheetItemStyle = tva({
-  base: "w-full flex-row items-center p-3 rounded-sm data-[disabled=true]:opacity-40 data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed hover:bg-background-50 active:bg-background-100 data-[focus=true]:bg-background-100 web:data-[focus-visible=true]:bg-background-100 data-[checked=true]:bg-background-100",
+  base: "w-full flex-row items-center p-3 data-[disabled=true]:opacity-40 data-[disabled=true]:web:pointer-events-auto data-[disabled=true]:web:cursor-not-allowed hover:bg-background-50 active:bg-background-100 data-[focus=true]:bg-background-100 web:data-[focus-visible=true]:bg-background-100 data-[checked=true]:bg-background-100",
 });
 
 const actionsheetItemTextStyle = tva({
@@ -131,7 +130,7 @@ const actionsheetItemTextStyle = tva({
 });
 
 const actionsheetDragIndicatorStyle = tva({
-  base: "w-16 h-1 bg-background-400 rounded-full",
+  base: "w-16 h-1 bg-background-400",
 });
 
 const actionsheetDragIndicatorWrapperStyle = tva({
@@ -281,34 +280,45 @@ type IActionsheetSectionHeaderTextProps = VariantProps<
 type IActionsheetIconProps = VariantProps<typeof actionsheetIconStyle> &
   React.ComponentProps<typeof UIActionsheet.Icon> & {
     className?: string;
+    as?: React.ElementType;
   };
 
-const Actionsheet = React.forwardRef((props, ref) => {
-  return <UIActionsheet ref={ref} style={styles.actionsheet} {...props} />;
-});
-
-const ActionsheetContent = React.forwardRef((props, ref) => {
+const Actionsheet = React.forwardRef<any, any>(({ className, ...props }, ref) => {
   return (
-    <UIActionsheet.Content
+    <UIActionsheet
       ref={ref}
-      style={styles.actionsheetContent}
       {...props}
+      className={`flex-1 justify-end ${className || ""}`}
     />
   );
 });
 
-const ActionsheetItem = React.forwardRef((props, ref) => {
+const ActionsheetContent = React.forwardRef<any, any>(({ className, ...props }, ref) => {
   return (
-    <UIActionsheet.Item ref={ref} style={styles.actionsheetItem} {...props} />
+    <UIActionsheet.Content
+      ref={ref}
+      {...props}
+      className={`bg-canvas p-4 ${className || ""}`}
+    />
   );
 });
 
-const ActionsheetItemText = React.forwardRef((props, ref) => {
+const ActionsheetItem = React.forwardRef<any, any>(({ className, ...props }, ref) => {
+  return (
+    <UIActionsheet.Item
+      ref={ref}
+      {...props}
+      className={`flex-row items-center border-b border-line p-3 ${className || ""}`}
+    />
+  );
+});
+
+const ActionsheetItemText = React.forwardRef<any, any>(({ className, ...props }, ref) => {
   return (
     <UIActionsheet.ItemText
       ref={ref}
-      style={styles.actionsheetItemText}
       {...props}
+      className={`font-inter text-base text-slate ${className || ""}`}
     />
   );
 });
@@ -492,39 +502,6 @@ const ActionsheetIcon = React.forwardRef<
       {...props}
     />
   );
-});
-
-const styles = StyleSheet.create({
-  actionsheet: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  actionsheetContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  actionsheetItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
-  },
-  actionsheetItemText: {
-    fontFamily: "Poppins_400Regular",
-    fontSize: 16,
-    color: "#606060",
-  },
 });
 
 export {

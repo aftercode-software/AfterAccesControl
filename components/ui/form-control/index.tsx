@@ -10,7 +10,6 @@ import {
 import { cssInterop } from "nativewind";
 import type { VariantProps } from "@gluestack-ui/nativewind-utils";
 import { PrimitiveIcon, UIIcon } from "@gluestack-ui/icon";
-import { globalStyles } from "@/styles/globalStyles";
 
 const SCOPE = "FORM_CONTROL";
 
@@ -132,7 +131,7 @@ const formControlLabelStyle = tva({
 });
 
 const formControlLabelTextStyle = tva({
-  base: " text-typography-900",
+  base: "font-inter text-[15px] text-ink",
   variants: {
     isTruncated: {
       true: "web:truncate",
@@ -396,7 +395,6 @@ const FormControlLabelText = React.forwardRef<
         size,
         class: className,
       })}
-      style={globalStyles.placeholderInput}
       ref={ref}
       {...props}
     />

@@ -1,26 +1,20 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
+import BrandLogo from "@/components/ui/BrandLogo";
+import ConnectionPill from "@/components/ui/ConnectionPill";
 import PendingData from "./PendingData";
-import ProfileIcon from "./ProfileIcon";
+import { useData } from "@/hooks/useData";
 
 export default function Header() {
+  const { connectionStatus } = useData();
+
   return (
-    <View style={styles.headerContainer}>
-      <ProfileIcon />
-      <PendingData />
+    <View className="h-[70px] flex-row items-center justify-between border-b border-line bg-canvas px-[22px]">
+      <BrandLogo className="h-[44px] w-[100px]" />
+      <View className="flex-row items-center gap-2">
+        <ConnectionPill status={connectionStatus} />
+        <PendingData />
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    height: 80,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-    alignItems: "center",
-    display: "flex",
-    flexDirection: "row",
-    paddingHorizontal: 32,
-    justifyContent: "space-between",
-    alignContent: "center",
-  },
-});
