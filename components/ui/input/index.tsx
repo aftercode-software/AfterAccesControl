@@ -34,7 +34,7 @@ cssInterop(PrimitiveIcon, {
 });
 
 const inputStyle = tva({
-  base: "border-[1px] flex-row items-center overflow-hidden rounded-xl border-[#606060] px-4 h-14",
+  base: "border-[1px] flex-row items-center overflow-hidden border-[#606060] px-4 h-14",
   variants: {
     size: {
       xl: "h-12",
@@ -64,7 +64,7 @@ const inputSlotStyle = tva({
 });
 
 const inputFieldStyle = tva({
-  base: "flex-1 px-2 text-[#606060] placeholder:text-[#606060] font-poppins text-base leading-5 h-full",
+  base: "flex-1 px-2 text-slate placeholder:text-slate font-inter text-base leading-5 h-full",
 });
 
 type IInputProps = React.ComponentProps<typeof UIInput> &
@@ -161,7 +161,6 @@ const InputField = React.forwardRef<
     <UIInput.Input
       ref={ref}
       {...props}
-      style={{ fontFamily: "Poppins_400Regular" }}
       className={inputFieldStyle({
         parentVariants: {
           variant: parentVariant,

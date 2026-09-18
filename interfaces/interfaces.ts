@@ -1,11 +1,32 @@
 export interface DataContextProps {
-  pendingData: Movimiento[];
+  connectionStatus: ConnectionStatus;
+  pendingData: PendingMovimiento[];
+  pendingExits: PendingSalida[];
+  refreshConnection: () => Promise<boolean>;
   saveFormData: (data: Movimiento) => Promise<void>;
   getSentData: () => Promise<MovimientoServer[]>;
-  marcarSalida: (id: number) => Promise<void>;
+  marcarSalida: (id: number, localId?: string) => Promise<void>;
   updateSentData: () => Promise<void>;
   getEstadisticas: (opcion: "mensuales" | "hoy") => Promise<Estadisticas>;
   retryPendingData: () => Promise<void>;
+}
+
+export type ConnectionStatus =
+  | "checking"
+  | "connected"
+  | "offline"
+  | "server-unavailable";
+
+export interface PendingMovimiento extends Movimiento {
+  localId: string;
+  serverId?: number;
+}
+
+export interface PendingSalida {
+  id: number;
+  fechaSalida: string;
+  horaSalida: string;
+  movimiento?: MovimientoServer;
 }
 
 export interface Movimiento {
@@ -27,6 +48,8 @@ export interface Movimiento {
 
 export interface MovimientoServer extends Movimiento {
   id: number;
+  localId?: string;
+  isPending?: boolean;
 }
 
 export interface Estadisticas {

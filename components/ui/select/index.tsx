@@ -24,7 +24,7 @@ import {
   ActionsheetSectionList,
   ActionsheetSectionHeaderText,
 } from "./select-actionsheet";
-import { Pressable, View, TextInput, StyleSheet } from "react-native";
+import { Pressable, View, TextInput } from "react-native";
 
 const SelectTriggerWrapper = React.forwardRef<
   React.ElementRef<typeof Pressable>,
@@ -75,50 +75,44 @@ cssInterop(PrimitiveIcon, {
   },
 });
 
-const Select = React.forwardRef((props, ref) => {
-  return <UISelect style={styles.select} ref={ref} {...props} />;
+const Select = React.forwardRef<any, any>(({ className, ...props }, ref) => {
+  return (
+    <UISelect
+      ref={ref}
+      {...props}
+      className={`flex-row items-center overflow-hidden border border-line px-3 h-12 ${className || ""}`}
+    />
+  );
 });
 
-const SelectTrigger = React.forwardRef((props, ref) => {
-  return <UISelect.Trigger style={styles.trigger} ref={ref} {...props} />;
+const SelectTrigger = React.forwardRef<any, any>(({ className, ...props }, ref) => {
+  return (
+    <UISelect.Trigger
+      ref={ref}
+      {...props}
+      className={`flex-1 flex-row items-center ${className || ""}`}
+    />
+  );
 });
 
-const SelectInput = React.forwardRef((props, ref) => {
-  return <UISelect.Input style={styles.input} ref={ref} {...props} />;
+const SelectInput = React.forwardRef<any, any>(({ className, ...props }, ref) => {
+  return (
+    <UISelect.Input
+      ref={ref}
+      {...props}
+      className={`flex-1 px-2 font-inter text-base text-slate ${className || ""}`}
+    />
+  );
 });
 
-const SelectIcon = React.forwardRef((props, ref) => {
-  return <UISelect.Icon style={styles.icon} ref={ref} {...props} />;
-});
-
-const styles = StyleSheet.create({
-  select: {
-    borderWidth: 1,
-    borderColor: "#606060",
-    borderRadius: 12,
-    overflow: "hidden",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    height: 48, // Altura consistente con el Input
-  },
-  trigger: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  input: {
-    flex: 1,
-    color: "#606060",
-    fontSize: 16,
-    fontFamily: "Poppins_400Regular",
-    paddingHorizontal: 8,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    tintColor: "#606060", // Color del ícono
-  },
+const SelectIcon = React.forwardRef<any, any>(({ className, ...props }, ref) => {
+  return (
+    <UISelect.Icon
+      ref={ref}
+      {...props}
+      className={`h-6 w-6 text-slate ${className || ""}`}
+    />
+  );
 });
 
 Select.displayName = "Select";

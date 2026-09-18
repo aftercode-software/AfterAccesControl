@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import "../global.css";
 import { Slot } from "expo-router";
 import { AuthProvider } from "../context/AuthContext";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
@@ -26,8 +27,15 @@ import {
   Poppins_900Black,
   Poppins_900Black_Italic,
 } from "@expo-google-fonts/poppins";
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CheckCheck, CircleX, TriangleAlert } from "lucide-react-native";
+import { colors } from "@/styles/tokens";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,6 +59,10 @@ export default function Layout() {
     Poppins_800ExtraBold_Italic,
     Poppins_900Black,
     Poppins_900Black_Italic,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
   });
 
   useEffect(() => {
@@ -64,17 +76,17 @@ export default function Layout() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView className="flex-1 bg-canvas">
       <ToastProvider
         placement="top"
         offset={50}
         duration={10000}
-        successColor="green"
+        successColor={colors.success}
         successIcon={<CheckCheck color={"#fff"} />}
-        warningColor="orange"
+        warningColor={colors.amberDeep}
         warningIcon={<TriangleAlert color={"#fff"} />}
-        dangerColor="#a53333"
-        dangerIcon={<CircleX color={"#fff"} className="pr-2" />}
+        dangerColor={colors.danger}
+        dangerIcon={<CircleX color={colors.white} />}
       >
         <AuthProvider>
           <DataProvider>

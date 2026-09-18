@@ -1,15 +1,13 @@
-import React, { useEffect, useState, useRef } from "react";
-import { View, Animated } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { router } from "expo-router";
-
-import "global.css";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import BrandLogo from "@/components/ui/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { colors } from "@/styles/tokens";
 
 export default function Index() {
   const { user, loading } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
-  const rotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setIsMounted(true);
@@ -17,51 +15,16 @@ export default function Index() {
 
   useEffect(() => {
     if (isMounted && !loading) {
-      if (user) {
-        router.replace("/ingreso");
-      } else {
-        router.replace("/login");
-      }
+      router.replace(user ? "/ingreso" : "/login");
     }
-  }, [isMounted, user, loading]);
-
-  useEffect(() => {
-    const rotateAnimation = Animated.loop(
-      Animated.timing(rotation, {
-        toValue: 2,
-        duration: 2000,
-        useNativeDriver: true,
-      })
-    );
-    rotateAnimation.start();
-
-    return () => rotateAnimation.stop();
-  }, [rotation]);
-
-  const rotateInterpolate = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
+  }, [isMounted, loading, user]);
 
   return (
-    <GluestackUIProvider mode="light">
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#fff",
-        }}
-      >
-        <Animated.Image
-          source={require("/assets/logo2.png")}
-          style={{
-            width: 200,
-            height: 220,
-            transform: [{ rotate: rotateInterpolate }],
-          }}
-        />
+    <View className="flex-1 items-center justify-center bg-canvas">
+      <BrandLogo className="h-[74px] w-[170px]" />
+      <View className="mt-6">
+        <ActivityIndicator color={colors.amberDeep} size="small" />
       </View>
-    </GluestackUIProvider>
+    </View>
   );
 }

@@ -1,5 +1,4 @@
-import { TextInput, View, Text } from "react-native";
-import { VStack } from "./ui/vstack";
+import Field from "@/components/ui/Field";
 
 export default function CustomInput({
   tittle,
@@ -13,26 +12,11 @@ export default function CustomInput({
   onChangeText: (text: string) => void;
 }) {
   return (
-    <VStack className="flex-[1.4] space-y-1">
-      <Text
-        className="text-xl px-1 pb-1 text-gray-800"
-        style={{
-          fontFamily: "Poppins_400Regular",
-          fontSize: 16,
-          paddingVertical: 8,
-        }}
-      >
-        {tittle}
-      </Text>
-      <View>
-        <TextInput
-          placeholder={placeholder}
-          value={value}
-          onChangeText={(text) => onChangeText(text)}
-          style={{ borderRadius: 10, borderWidth: 1.5, borderColor: "#ccc" }}
-          className="w-full h-12 px-4 text-base"
-        />
-      </View>
-    </VStack>
+    <Field
+      label={tittle}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      value={value}
+    />
   );
 }

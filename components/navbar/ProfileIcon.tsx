@@ -1,14 +1,13 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 
 export default function ProfileIcon() {
   const { user } = useAuth();
   return (
-    <Text
-      className="text-xl w-10 h-10 text-white bg-[#78808B] rounded-full flex items-center justify-center text-center"
-      style={{ fontFamily: "Poppins_500Medium", padding: 2, paddingTop: 6 }}
-    >
-      {user?.username?.charAt(0).toUpperCase()}
-    </Text>
+    <View className="h-[34px] w-[34px] items-center justify-center bg-ink">
+      <Text className="font-inter-semibold text-[14px] text-white">
+        {user?.username?.charAt(0).toUpperCase()}
+      </Text>
+    </View>
   );
 }
